@@ -6,12 +6,42 @@ use Contao\DataContainer;
 use Contao\DC_Table;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Trassd\Contao\GroundingPages\Enum\GroundingSectionType;
+use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 /*
  * Abschnitte einer Grounding Page (Kindtabelle, ptable = tl_grounding_page, manuell sortierbar).
  * Der Selektor sectionType schaltet per Subpalette (fieldName_fieldValue) das passende
  * rowWizard-Feld frei. rowWizard speichert je Zeile ein assoziatives Array nach Feldname.
+ *
+ * rowWizard-Felder und Subpaletten werden unten aus SectionRowSchema/GroundingSectionType
+ * abgeleitet, damit das Spalten-Vokabular genau eine Wahrheit hat.
  */
+
+/**
+ * Baut die rowWizard-Feld-Definition aus dem Spalten-Owner. Alle Spalten sind Text;
+ * das Label folgt der Konvention col_<columnKey>. Die &-Referenz hält die Übersetzung
+ * lazy (TL_LANG ist beim DCA-Laden ggf. noch nicht befüllt).
+ *
+ * @return array<string, mixed>
+ */
+$groundingRowWizard = static function (SectionRowSchema $schema): array {
+    $fields = [];
+
+    foreach ($schema->columns() as $column) {
+        $fields[$column] = [
+            'label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_'.$column],
+            'inputType' => 'text',
+        ];
+    }
+
+    return [
+        'inputType' => 'rowWizard',
+        'fields' => $fields,
+        'eval' => ['tl_class' => 'clr'],
+        'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
+    ];
+};
+
 $GLOBALS['TL_DCA']['tl_grounding_section'] = [
     'config' => [
         'dataContainer' => DC_Table::class,
@@ -51,13 +81,8 @@ $GLOBALS['TL_DCA']['tl_grounding_section'] = [
         '__selector__' => ['sectionType'],
         'default' => '{section_legend},sectionType,sectionTitle;{publish_legend},published',
     ],
-    'subpalettes' => [
-        'sectionType_fact-grid' => 'factGrid',
-        'sectionType_timeline' => 'timelineItems',
-        'sectionType_defined-terms' => 'definedTerms',
-        'sectionType_faq' => 'faqItems',
-        'sectionType_sources' => 'sources,identifiers',
-    ],
+    // Aus GroundingSectionType::fields() abgeleitet (siehe unten).
+    'subpalettes' => [],
     'fields' => [
         'id' => [
             'sql' => 'int(10) unsigned NOT NULL auto_increment',
@@ -83,60 +108,7 @@ $GLOBALS['TL_DCA']['tl_grounding_section'] = [
             'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
             'sql' => "varchar(255) NOT NULL default ''",
         ],
-        'factGrid' => [
-            'inputType' => 'rowWizard',
-            'fields' => [
-                'label' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_label'], 'inputType' => 'text'],
-                'value' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_value'], 'inputType' => 'text'],
-            ],
-            'eval' => ['tl_class' => 'clr'],
-            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
-        ],
-        'timelineItems' => [
-            'inputType' => 'rowWizard',
-            'fields' => [
-                'year' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_year'], 'inputType' => 'text'],
-                'event' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_event'], 'inputType' => 'text'],
-            ],
-            'eval' => ['tl_class' => 'clr'],
-            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
-        ],
-        'definedTerms' => [
-            'inputType' => 'rowWizard',
-            'fields' => [
-                'term' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_term'], 'inputType' => 'text'],
-                'definition' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_definition'], 'inputType' => 'text'],
-            ],
-            'eval' => ['tl_class' => 'clr'],
-            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
-        ],
-        'faqItems' => [
-            'inputType' => 'rowWizard',
-            'fields' => [
-                'question' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_question'], 'inputType' => 'text'],
-                'answer' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_answer'], 'inputType' => 'text'],
-            ],
-            'eval' => ['tl_class' => 'clr'],
-            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
-        ],
-        'sources' => [
-            'inputType' => 'rowWizard',
-            'fields' => [
-                'title' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_title'], 'inputType' => 'text'],
-                'url' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_url'], 'inputType' => 'text'],
-            ],
-            'eval' => ['tl_class' => 'clr'],
-            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
-        ],
-        'identifiers' => [
-            'inputType' => 'rowWizard',
-            'fields' => [
-                'label' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_label'], 'inputType' => 'text'],
-                'value' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_section']['col_value'], 'inputType' => 'text'],
-            ],
-            'eval' => ['tl_class' => 'clr'],
-            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
-        ],
+        // rowWizard-Felder (factGrid, timelineItems, …) werden unten aus SectionRowSchema abgeleitet.
         'published' => [
             'inputType' => 'checkbox',
             'toggle' => true,
@@ -146,3 +118,14 @@ $GLOBALS['TL_DCA']['tl_grounding_section'] = [
         ],
     ],
 ];
+
+// Subpaletten: welcher Sektionstyp welche Felder freischaltet (SOURCES => 'sources,identifiers').
+foreach (GroundingSectionType::cases() as $sectionType) {
+    $GLOBALS['TL_DCA']['tl_grounding_section']['subpalettes']['sectionType_'.$sectionType->value]
+        = implode(',', array_map(static fn (SectionRowSchema $field): string => $field->fieldName(), $sectionType->fields()));
+}
+
+// rowWizard-Felder: eine Definition pro Row-Schema, Spalten-Keys direkt aus dem Owner.
+foreach (SectionRowSchema::cases() as $rowSchema) {
+    $GLOBALS['TL_DCA']['tl_grounding_section']['fields'][$rowSchema->fieldName()] = $groundingRowWizard($rowSchema);
+}

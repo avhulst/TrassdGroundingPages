@@ -7,6 +7,8 @@ namespace Trassd\Contao\GroundingPages\Tests\Dca;
 use Contao\DataContainer;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
+use Trassd\Contao\GroundingPages\Enum\GroundingSectionType;
+use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 class TlGroundingSectionDcaTest extends TestCase
 {
@@ -76,6 +78,38 @@ class TlGroundingSectionDcaTest extends TestCase
         $this->assertArrayHasKey($colA, $definition['fields']);
         $this->assertArrayHasKey($colB, $definition['fields']);
         $this->assertSame('blob', $definition['sql']['type']);
+    }
+
+    /**
+     * Locality-Guard: die rowWizard-Feld-Keys leiten sich exakt aus SectionRowSchema
+     * ab, sodass die DCA nie eine zweite Wahrheit über die Spalten werden kann.
+     */
+    public function testRowWizardFieldsAreDerivedFromSectionRowSchema(): void
+    {
+        $dca = $this->loadDca();
+
+        foreach (SectionRowSchema::cases() as $schema) {
+            $definition = $dca['fields'][$schema->fieldName()] ?? null;
+
+            $this->assertIsArray($definition, $schema->fieldName());
+            $this->assertSame('rowWizard', $definition['inputType']);
+            $this->assertSame($schema->columns(), array_keys($definition['fields']), $schema->fieldName());
+        }
+    }
+
+    /**
+     * Locality-Guard: die Subpaletten leiten sich exakt aus
+     * GroundingSectionType::fields() ab.
+     */
+    public function testSubpalettesAreDerivedFromSectionType(): void
+    {
+        $dca = $this->loadDca();
+
+        foreach (GroundingSectionType::cases() as $type) {
+            $expected = implode(',', array_map(static fn (SectionRowSchema $f): string => $f->fieldName(), $type->fields()));
+
+            $this->assertSame($expected, $dca['subpalettes']['sectionType_'.$type->value] ?? null, $type->value);
+        }
     }
 
     /**
