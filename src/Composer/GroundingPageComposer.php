@@ -11,6 +11,7 @@ use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
 use Trassd\Contao\GroundingPages\Enum\GroundingEntityType;
 use Trassd\Contao\GroundingPages\Enum\GroundingSectionType;
+use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 final class GroundingPageComposer
 {
@@ -50,13 +51,28 @@ final class GroundingPageComposer
         return new GroundingSectionDto(
             sectionType: (string) $section->sectionType,
             sectionTitle: (string) $section->sectionTitle,
-            factGrid: GroundingSectionType::FACT_GRID === $type ? $this->pairs($section->factGrid, 'label', 'value') : [],
-            timeline: GroundingSectionType::TIMELINE === $type ? $this->pairs($section->timelineItems, 'year', 'event') : [],
-            definedTerms: GroundingSectionType::DEFINED_TERMS === $type ? $this->pairs($section->definedTerms, 'term', 'definition') : [],
-            faq: GroundingSectionType::FAQ === $type ? $this->pairs($section->faqItems, 'question', 'answer') : [],
-            sources: GroundingSectionType::SOURCES === $type ? $this->pairs($section->sources, 'title', 'url') : [],
-            identifiers: GroundingSectionType::SOURCES === $type ? $this->pairs($section->identifiers, 'label', 'value') : [],
+            factGrid: $this->rows($section, $type, SectionRowSchema::FactGrid),
+            timeline: $this->rows($section, $type, SectionRowSchema::Timeline),
+            definedTerms: $this->rows($section, $type, SectionRowSchema::DefinedTerms),
+            faq: $this->rows($section, $type, SectionRowSchema::Faq),
+            sources: $this->rows($section, $type, SectionRowSchema::Sources),
+            identifiers: $this->rows($section, $type, SectionRowSchema::Identifiers),
         );
+    }
+
+    /**
+     * Liest ein rowWizard-Feld, sofern der Sektionstyp es freischaltet. Die
+     * Spalten-Keys stammen aus dem Owner (SectionRowSchema), nicht aus Literalen.
+     *
+     * @return list<array<string, string>>
+     */
+    private function rows(GroundingSectionModel $section, GroundingSectionType $type, SectionRowSchema $schema): array
+    {
+        if (!\in_array($schema, $type->fields(), true)) {
+            return [];
+        }
+
+        return $this->pairs($section->{$schema->fieldName()}, ...$schema->columns());
     }
 
     private function resolveSchemaType(GroundingPageModel $page): string

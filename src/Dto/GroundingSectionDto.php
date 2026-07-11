@@ -8,9 +8,8 @@ final readonly class GroundingSectionDto
 {
     /**
      * Jede Zeile ist eine assoziative Bezeichnung→Wert-Abbildung
-     * (rowWizard-Serialisierung): factGrid label/value, timeline year/event,
-     * definedTerms term/definition, faq question/answer, sources title/url,
-     * identifiers label/value.
+     * (rowWizard-Serialisierung). Die Spalten-Keys je Feld besitzt SectionRowSchema
+     * (der einzige Owner) — siehe SectionRowSchema::columns().
      *
      * @param list<array<string, string>> $factGrid
      * @param list<array<string, string>> $timeline

@@ -18,6 +18,23 @@ enum GroundingSectionType: string
     }
 
     /**
+     * Die rowWizard-Felder, die dieser Sektionstyp per Subpalette freischaltet.
+     * SOURCES trägt zwei Felder (Quellen + Identifikatoren).
+     *
+     * @return list<SectionRowSchema>
+     */
+    public function fields(): array
+    {
+        return match ($this) {
+            self::FACT_GRID => [SectionRowSchema::FactGrid],
+            self::TIMELINE => [SectionRowSchema::Timeline],
+            self::DEFINED_TERMS => [SectionRowSchema::DefinedTerms],
+            self::FAQ => [SectionRowSchema::Faq],
+            self::SOURCES => [SectionRowSchema::Sources, SectionRowSchema::Identifiers],
+        };
+    }
+
+    /**
      * @return list<string>
      */
     public static function values(): array

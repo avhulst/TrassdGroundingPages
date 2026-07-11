@@ -12,6 +12,7 @@ use Spatie\SchemaOrg\Schema;
 use Spatie\SchemaOrg\WebPage;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
+use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 final readonly class GroundingJsonLdBuilder
 {
@@ -87,14 +88,15 @@ final readonly class GroundingJsonLdBuilder
     public function buildDefinedTerms(GroundingPageDto $dto): array
     {
         $nodes = [];
+        [$termKey, $definitionKey] = SectionRowSchema::DefinedTerms->columns();
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->definedTerms) as $term) {
-            if ('' === ($term['term'] ?? '')) {
+            if ('' === ($term[$termKey] ?? '')) {
                 continue;
             }
 
-            $node = Schema::definedTerm()->name($term['term']);
-            $node->description($term['definition'] ?? '');
+            $node = Schema::definedTerm()->name($term[$termKey]);
+            $node->description($term[$definitionKey] ?? '');
             $nodes[] = $node;
         }
 
@@ -104,15 +106,16 @@ final readonly class GroundingJsonLdBuilder
     public function buildFaq(GroundingPageDto $dto): BaseType|null
     {
         $questions = [];
+        [$questionKey, $answerKey] = SectionRowSchema::Faq->columns();
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->faq) as $entry) {
-            if ('' === ($entry['question'] ?? '') || '' === ($entry['answer'] ?? '')) {
+            if ('' === ($entry[$questionKey] ?? '') || '' === ($entry[$answerKey] ?? '')) {
                 continue;
             }
 
             $questions[] = Schema::question()
-                ->name($entry['question'])
-                ->acceptedAnswer(Schema::answer()->text($entry['answer']))
+                ->name($entry[$questionKey])
+                ->acceptedAnswer(Schema::answer()->text($entry[$answerKey]))
             ;
         }
 
@@ -180,9 +183,10 @@ final readonly class GroundingJsonLdBuilder
     private function collectSameAs(GroundingPageDto $dto): array
     {
         $sameAs = $dto->sameAs;
+        [, $valueKey] = SectionRowSchema::Identifiers->columns();
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->identifiers) as $identifier) {
-            $value = $identifier['value'] ?? '';
+            $value = $identifier[$valueKey] ?? '';
 
             if ($this->isUrl($value)) {
                 $sameAs[] = $value;
@@ -198,16 +202,19 @@ final readonly class GroundingJsonLdBuilder
     private function buildAdditionalProperties(GroundingPageDto $dto): array
     {
         $props = [];
+        [$factLabelKey, $factValueKey] = SectionRowSchema::FactGrid->columns();
+        [$identifierLabelKey, $identifierValueKey] = SectionRowSchema::Identifiers->columns();
+        [$yearKey, $eventKey] = SectionRowSchema::Timeline->columns();
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->factGrid) as $fact) {
-            if ('' !== ($fact['label'] ?? '') && '' !== ($fact['value'] ?? '')) {
-                $props[] = ['@type' => 'PropertyValue', 'name' => $fact['label'], 'value' => $fact['value']];
+            if ('' !== ($fact[$factLabelKey] ?? '') && '' !== ($fact[$factValueKey] ?? '')) {
+                $props[] = ['@type' => 'PropertyValue', 'name' => $fact[$factLabelKey], 'value' => $fact[$factValueKey]];
             }
         }
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->identifiers) as $identifier) {
-            $label = $identifier['label'] ?? '';
-            $value = $identifier['value'] ?? '';
+            $label = $identifier[$identifierLabelKey] ?? '';
+            $value = $identifier[$identifierValueKey] ?? '';
 
             if ('' !== $label && '' !== $value && !$this->isUrl($value)) {
                 $props[] = ['@type' => 'PropertyValue', 'propertyID' => $label, 'name' => $label, 'value' => $value];
@@ -215,8 +222,8 @@ final readonly class GroundingJsonLdBuilder
         }
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->timeline) as $item) {
-            if ('' !== ($item['year'] ?? '') && '' !== ($item['event'] ?? '')) {
-                $props[] = ['@type' => 'PropertyValue', 'name' => $item['year'], 'value' => $item['event']];
+            if ('' !== ($item[$yearKey] ?? '') && '' !== ($item[$eventKey] ?? '')) {
+                $props[] = ['@type' => 'PropertyValue', 'name' => $item[$yearKey], 'value' => $item[$eventKey]];
             }
         }
 
