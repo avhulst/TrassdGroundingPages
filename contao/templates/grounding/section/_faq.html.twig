@@ -1,0 +1,9 @@
+<section class="grounding-page grounding-page__faq">
+    <h2>{{ section.sectionTitle ?: 'grounding.detail.faq'|trans([], 'contao_default') }}</h2>
+    <dl class="data-grid">
+        {% for item in section.faq %}
+            <dt>{{ item.question }}</dt>
+            <dd>{{ item.answer }}</dd>
+        {% endfor %}
+    </dl>
+</section>

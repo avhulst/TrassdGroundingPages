@@ -1,0 +1,18 @@
+### IDE
+.idea
+.vscode
+
+### Composer
+composer.lock
+**/vendor
+
+### Node
+package-lock.json
+**/node_modules
+
+### PhpUnit
+/vendor/
+/.phpunit.cache/
+
+### Logs
+*.log

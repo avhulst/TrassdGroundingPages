@@ -1,0 +1,74 @@
+{
+    "name": "trassd/contao-grounding-pages",
+    "type": "contao-bundle",
+    "description": "Integrates Grounding Pages (Standard v1.6) into Contao: one record = one entity (parent + child table), embedded as a content element, full schema.org ontology and exactly one standard-compliant JSON-LD graph per page (GEO/AEO).",
+    "license": "LGPL-3.0-or-later",
+    "authors": [
+      {
+        "name": "Andreas van Hulst",
+        "homepage": "https://www.trassd.de"
+      }
+    ],
+    "require": {
+        "php": "^8.3",
+        "contao/core-bundle": "^5.7",
+        "spatie/schema-org": "^3.10 || ^4.0",
+        "symfony/dependency-injection": "^7.4",
+        "symfony/http-foundation": "^7.4",
+        "symfony/http-kernel": "^7.4"
+    },
+    "require-dev": {
+        "contao/contao-rector": "dev-main",
+        "contao/easy-coding-standard": "^6.13",
+        "contao/manager-plugin": "^2.13",
+        "contao/test-case": "^5.7",
+        "phpstan/phpstan": "^2.0",
+        "phpstan/phpstan-phpunit": "^2.0",
+        "phpstan/phpstan-symfony": "^2.0",
+        "phpunit/phpunit": "^12.4",
+        "rector/rector": "^2.0",
+        "shipmonk/composer-dependency-analyser": "^1.8",
+        "symplify/easy-coding-standard": "13.2.3"
+    },
+    "config": {
+        "allow-plugins": {
+            "composer/package-versions-deprecated": true,
+            "contao-community-alliance/composer-plugin": true,
+            "contao-components/installer": true,
+            "contao/manager-plugin": true,
+            "dealerdirect/phpcodesniffer-composer-installer": true,
+            "php-http/discovery": true,
+            "phpstan/extension-installer": true
+        }
+    },
+    "autoload": {
+        "psr-4": {
+            "Trassd\\Contao\\GroundingPages\\": "src/"
+        },
+        "classmap": [
+            "contao/models"
+        ]
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Trassd\\Contao\\GroundingPages\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "contao-manager-plugin": "Trassd\\Contao\\GroundingPages\\ContaoManager\\Plugin"
+    },
+    "scripts": {
+        "ecs": "@php vendor/bin/ecs check --fix",
+        "phpstan": "@php vendor/bin/phpstan analyze",
+        "rector": "@php vendor/bin/rector --dry-run",
+        "depcheck": "@php vendor/bin/composer-dependency-analyser --config=depcheck.php",
+        "tests": "@php vendor/bin/phpunit",
+        "all": [
+            "@rector",
+            "@ecs",
+            "@phpstan",
+            "@depcheck",
+            "@tests"
+        ]
+    }
+}

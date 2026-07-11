@@ -1,0 +1,11 @@
+<section class="grounding-page grounding-page__history">
+    {% if section.sectionTitle %}<h2>{{ section.sectionTitle }}</h2>{% endif %}
+    <ol class="grounding-page__timeline">
+        {% for item in section.timeline %}
+            <li>
+                <time class="grounding-page__timeline-year">{{ item.year }}</time>
+                <span class="grounding-page__timeline-event">{{ item.event }}</span>
+            </li>
+        {% endfor %}
+    </ol>
+</section>

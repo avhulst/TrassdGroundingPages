@@ -1,0 +1,256 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Trassd\Contao\GroundingPages\JsonLd;
+
+use Contao\CoreBundle\Routing\ResponseContext\JsonLd\JsonLdManager;
+use Contao\CoreBundle\Routing\ResponseContext\ResponseContextAccessor;
+use Spatie\SchemaOrg\BaseType;
+use Spatie\SchemaOrg\Graph;
+use Spatie\SchemaOrg\Schema;
+use Spatie\SchemaOrg\WebPage;
+use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
+use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
+
+final readonly class GroundingJsonLdBuilder
+{
+    public function __construct(private ResponseContextAccessor $responseContextAccessor)
+    {
+    }
+
+    public function addToResponseContext(GroundingPageDto $dto): void
+    {
+        $context = $this->responseContextAccessor->getResponseContext();
+
+        if (null === $context || !$context->has(JsonLdManager::class)) {
+            return;
+        }
+
+        // set() statt add(): der Core seedet eine (leere) WebPage am
+        // Standard-Identifier; wir überschreiben sie, sodass es genau eine WebPage pro
+        // Seite gibt. collectFinalScriptFromGraphs() ruft der Core
+        // (ContentCompositionBuilder) selbst auf.
+        $this->populate($context->get(JsonLdManager::class)->getGraphForSchema(JsonLdManager::SCHEMA_ORG), $dto);
+    }
+
+    public function buildWebPage(GroundingPageDto $dto): WebPage
+    {
+        $webPage = Schema::webPage();
+        $webPage->setProperty('@id', '#webpage');
+        $webPage->setProperty('mainEntity', ['@id' => '#main']);
+        $webPage->name($dto->name);
+        $webPage->description($dto->definition);
+        $webPage->inLanguage($dto->inLanguage);
+        // dateCreated/dateModified sind in spatie auf DateTimeInterface typisiert; wir
+        // führen JSON-LD-Datumsstrings ('Y-m-d') direkt über setProperty ein.
+        $webPage->setProperty('dateCreated', $dto->datePublished);
+        $webPage->setProperty('dateModified', $dto->dateModified);
+
+        if ('' !== $dto->publisher) {
+            $webPage->publisher(Schema::organization()->name($dto->publisher));
+        }
+
+        if ('' !== $dto->maintainer) {
+            $webPage->setProperty('maintainer', Schema::organization()->name($dto->maintainer));
+        }
+
+        return $webPage;
+    }
+
+    public function buildMainEntity(GroundingPageDto $dto): BaseType
+    {
+        $main = $this->createMainType('' !== $dto->schemaType ? $dto->schemaType : 'Thing');
+        $main->setProperty('@id', '#main');
+        $main->setProperty('mainEntityOfPage', ['@id' => '#webpage']);
+        $main->setProperty('name', $dto->name);
+        $main->setProperty('description', $dto->definition);
+
+        $sameAs = $this->collectSameAs($dto);
+
+        if ([] !== $sameAs) {
+            $main->setProperty('sameAs', $sameAs);
+        }
+
+        $additional = $this->buildAdditionalProperties($dto);
+
+        if ([] !== $additional) {
+            $main->setProperty('additionalProperty', $additional);
+        }
+
+        return $main;
+    }
+
+    /**
+     * @return list<BaseType>
+     */
+    public function buildDefinedTerms(GroundingPageDto $dto): array
+    {
+        $nodes = [];
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->definedTerms) as $term) {
+            if ('' === ($term['term'] ?? '')) {
+                continue;
+            }
+
+            $node = Schema::definedTerm()->name($term['term']);
+            $node->description($term['definition'] ?? '');
+            $nodes[] = $node;
+        }
+
+        return $nodes;
+    }
+
+    public function buildFaq(GroundingPageDto $dto): BaseType|null
+    {
+        $questions = [];
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->faq) as $entry) {
+            if ('' === ($entry['question'] ?? '') || '' === ($entry['answer'] ?? '')) {
+                continue;
+            }
+
+            $questions[] = Schema::question()
+                ->name($entry['question'])
+                ->acceptedAnswer(Schema::answer()->text($entry['answer']))
+            ;
+        }
+
+        if ([] === $questions) {
+            return null;
+        }
+
+        return Schema::fAQPage()->mainEntity($questions);
+    }
+
+    private function populate(Graph $graph, GroundingPageDto $dto): void
+    {
+        $graph->set($this->buildWebPage($dto));
+        $graph->set($this->buildMainEntity($dto), 'grounding-main');
+
+        foreach ($this->buildDefinedTerms($dto) as $index => $term) {
+            $graph->set($term, 'grounding-term-'.$index);
+        }
+
+        $faqPage = $this->buildFaq($dto);
+
+        if (null !== $faqPage) {
+            $graph->set($faqPage, 'grounding-faq');
+        }
+    }
+
+    private function createMainType(string $schemaType): BaseType
+    {
+        return match ($schemaType) {
+            'Organization' => Schema::organization(),
+            'Person' => Schema::person(),
+            'Product' => Schema::product(),
+            'Service' => Schema::service(),
+            'SoftwareApplication' => Schema::softwareApplication(),
+            'DefinedTerm' => Schema::definedTerm(),
+            'CreativeWork' => Schema::creativeWork(),
+            'Dataset' => Schema::dataset(),
+            'HowTo' => Schema::howTo(),
+            'Place' => Schema::place(),
+            'Event' => Schema::event(),
+            'Project' => Schema::project(),
+            'Thing' => Schema::thing(),
+            default => $this->createCustomType($schemaType),
+        };
+    }
+
+    private function createCustomType(string $schemaType): BaseType
+    {
+        $factory = lcfirst($schemaType);
+
+        if (method_exists(Schema::class, $factory)) {
+            $node = Schema::$factory();
+
+            if ($node instanceof BaseType) {
+                return $node;
+            }
+        }
+
+        return Schema::thing();
+    }
+
+    /**
+     * @return list<string>
+     */
+    private function collectSameAs(GroundingPageDto $dto): array
+    {
+        $sameAs = $dto->sameAs;
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->identifiers) as $identifier) {
+            $value = $identifier['value'] ?? '';
+
+            if ($this->isUrl($value)) {
+                $sameAs[] = $value;
+            }
+        }
+
+        return array_values(array_unique(array_filter($sameAs)));
+    }
+
+    /**
+     * @return list<array<string, string>>
+     */
+    private function buildAdditionalProperties(GroundingPageDto $dto): array
+    {
+        $props = [];
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->factGrid) as $fact) {
+            if ('' !== ($fact['label'] ?? '') && '' !== ($fact['value'] ?? '')) {
+                $props[] = ['@type' => 'PropertyValue', 'name' => $fact['label'], 'value' => $fact['value']];
+            }
+        }
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->identifiers) as $identifier) {
+            $label = $identifier['label'] ?? '';
+            $value = $identifier['value'] ?? '';
+
+            if ('' !== $label && '' !== $value && !$this->isUrl($value)) {
+                $props[] = ['@type' => 'PropertyValue', 'propertyID' => $label, 'name' => $label, 'value' => $value];
+            }
+        }
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->timeline) as $item) {
+            if ('' !== ($item['year'] ?? '') && '' !== ($item['event'] ?? '')) {
+                $props[] = ['@type' => 'PropertyValue', 'name' => $item['year'], 'value' => $item['event']];
+            }
+        }
+
+        if ('' !== $dto->status) {
+            $props[] = ['@type' => 'PropertyValue', 'name' => 'status', 'value' => $dto->status];
+        }
+
+        if ('' !== $dto->entryVersion) {
+            $props[] = ['@type' => 'PropertyValue', 'name' => 'version', 'value' => $dto->entryVersion];
+        }
+
+        return $props;
+    }
+
+    /**
+     * @param callable(GroundingSectionDto): list<array<string, string>> $extract
+     *
+     * @return list<array<string, string>>
+     */
+    private function collect(GroundingPageDto $dto, callable $extract): array
+    {
+        $out = [];
+
+        foreach ($dto->sections as $section) {
+            foreach ($extract($section) as $row) {
+                $out[] = $row;
+            }
+        }
+
+        return $out;
+    }
+
+    private function isUrl(string $value): bool
+    {
+        return str_starts_with($value, 'http://') || str_starts_with($value, 'https://');
+    }
+}

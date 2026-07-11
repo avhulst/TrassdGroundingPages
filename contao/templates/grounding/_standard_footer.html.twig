@@ -1,0 +1,54 @@
+<div class="grounding-page__footer">
+    {% if grounding.maintainer or grounding.entryVersion or grounding.datePublished or grounding.changelog or grounding.correctionContact %}
+        <section class="grounding-page__governance" aria-label="Governance">
+            <dl class="data-grid">
+                {% if grounding.maintainer %}
+                    <dt>{{ 'grounding.detail.maintainer'|trans([], 'contao_default') }}</dt>
+                    <dd>{{ grounding.maintainer }}</dd>
+                {% endif %}
+                {% if grounding.entryVersion %}
+                    <dt>{{ 'grounding.detail.version'|trans([], 'contao_default') }}</dt>
+                    <dd>{{ grounding.entryVersion }}</dd>
+                {% endif %}
+                {% if grounding.datePublished %}
+                    <dt>{{ 'grounding.detail.published'|trans([], 'contao_default') }}</dt>
+                    <dd><time datetime="{{ grounding.datePublished }}">{{ grounding.datePublished }}</time></dd>
+                {% endif %}
+            </dl>
+
+            {% if grounding.changelog %}
+                <div class="grounding-page__changelog">
+                    <h2>{{ 'grounding.detail.changelog'|trans([], 'contao_default') }}</h2>
+                    <ul>
+                        {% for entry in grounding.changelog %}
+                            <li>
+                                {% if entry.date %}<time datetime="{{ entry.date }}">{{ entry.date }}</time> — {% endif %}{{ entry.change }}
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% endif %}
+
+            {% if grounding.correctionContact %}
+                {%- set href = ('@' in grounding.correctionContact and '://' not in grounding.correctionContact)
+                    ? 'mailto:' ~ grounding.correctionContact
+                    : grounding.correctionContact -%}
+                <p class="grounding-page__correction">
+                    {{ 'grounding.detail.reportCorrection'|trans([], 'contao_default') }}
+                    <a href="{{ href }}" rel="noopener">{{ grounding.correctionContact }}</a>
+                </p>
+            {% endif %}
+        </section>
+    {% endif %}
+
+    <p class="grounding-page__standard-text">
+        {%- set link = '<a href="https://groundingpage.com/spec/" rel="noopener" target="_blank">'
+            ~ ('grounding.detail.standardLinkText'|trans(['1.6'], 'contao_default'))
+            ~ '</a>' -%}
+        {% if grounding.dateModified %}
+            {{ 'grounding.detail.standardTextVerified'|trans([link, '1.6', grounding.dateModified], 'contao_default')|raw }}
+        {% else %}
+            {{ 'grounding.detail.standardText'|trans([link, '1.6'], 'contao_default')|raw }}
+        {% endif %}
+    </p>
+</div>

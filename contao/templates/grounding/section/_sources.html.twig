@@ -1,0 +1,20 @@
+<section class="grounding-page grounding-page__sources">
+    <h2>{{ section.sectionTitle ?: 'grounding.detail.sources'|trans([], 'contao_default') }}</h2>
+
+    {% if section.identifiers %}
+        <dl class="data-grid">
+            {% for id in section.identifiers %}
+                <dt>{{ id.label }}</dt>
+                <dd>{{ id.value }}</dd>
+            {% endfor %}
+        </dl>
+    {% endif %}
+
+    {% if section.sources %}
+        <ul class="grounding-page__source-list">
+            {% for source in section.sources %}
+                <li><a href="{{ source.url }}" rel="nofollow noopener">{{ source.title ?: source.url }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>

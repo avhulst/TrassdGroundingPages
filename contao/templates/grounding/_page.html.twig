@@ -1,0 +1,20 @@
+<div class="grounding-page-wrapper">
+    {# Header immer aus den Kopfdaten (ADR 0002), nicht an einen Abschnitt gebunden. #}
+    {% include "@Contao/grounding/section/_entity_header.html.twig" with { grounding: grounding } only %}
+
+    {% for section in grounding.sections %}
+        {% if section.sectionType == 'fact-grid' %}
+            {% include "@Contao/grounding/section/_fact_grid.html.twig" with { section: section } only %}
+        {% elseif section.sectionType == 'timeline' %}
+            {% include "@Contao/grounding/section/_timeline.html.twig" with { section: section } only %}
+        {% elseif section.sectionType == 'defined-terms' %}
+            {% include "@Contao/grounding/section/_defined_terms.html.twig" with { section: section } only %}
+        {% elseif section.sectionType == 'faq' %}
+            {% include "@Contao/grounding/section/_faq.html.twig" with { section: section } only %}
+        {% elseif section.sectionType == 'sources' %}
+            {% include "@Contao/grounding/section/_sources.html.twig" with { section: section } only %}
+        {% endif %}
+    {% endfor %}
+
+    {% include "@Contao/grounding/_standard_footer.html.twig" with { grounding: grounding } only %}
+</div>

@@ -1,0 +1,9 @@
+<section class="grounding-page grounding-page__facts">
+    {% if section.sectionTitle %}<h2>{{ section.sectionTitle }}</h2>{% endif %}
+    <dl class="data-grid">
+        {% for fact in section.factGrid %}
+            <dt>{{ fact.label }}</dt>
+            <dd>{{ fact.value }}</dd>
+        {% endfor %}
+    </dl>
+</section>

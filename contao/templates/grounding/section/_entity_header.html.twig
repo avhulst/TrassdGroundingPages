@@ -1,0 +1,49 @@
+<article class="grounding-page grounding-page--header"
+         itemscope itemtype="https://schema.org/{{ grounding.schemaType|default('Thing') }}">
+
+    {% if grounding.name %}
+        <h1 class="grounding-page__name" itemprop="name">{{ grounding.name }}</h1>
+    {% endif %}
+
+    {% if grounding.entityType %}
+        <p class="grounding-page__type">{{ ('grounding.entityType.' ~ grounding.entityType)|trans([], 'contao_default') }}</p>
+    {% endif %}
+
+    {% include "@Contao/grounding/_human_notice.html.twig" %}
+
+    {% if grounding.definition %}
+        <p class="grounding-page__lead" itemprop="description">
+            {% if grounding.name %}<strong>{{ grounding.name }}</strong> {% endif %}{{ grounding.definition }}
+        </p>
+    {% endif %}
+
+    {% if grounding.distinction %}
+        <section class="grounding-page grounding-page__distinction">
+            <h2>{{ 'grounding.detail.distinction'|trans([], 'contao_default') }}</h2>
+            <p>{{ grounding.distinction }}</p>
+        </section>
+    {% endif %}
+
+    {% if grounding.segment %}
+        <p class="grounding-page__segment">
+            {{ 'grounding.detail.segmentAssignment'|trans([grounding.name, grounding.segment], 'contao_default') }}
+        </p>
+    {% endif %}
+
+    {% if grounding.publisher or grounding.status or grounding.dateModified %}
+        <dl class="grounding-page__meta data-grid">
+            {% if grounding.publisher %}
+                <dt>{{ 'grounding.detail.publisher'|trans([], 'contao_default') }}</dt>
+                <dd>{{ grounding.publisher }}</dd>
+            {% endif %}
+            {% if grounding.status %}
+                <dt>{{ 'grounding.detail.status'|trans([], 'contao_default') }}</dt>
+                <dd>{{ grounding.status }}</dd>
+            {% endif %}
+            {% if grounding.dateModified %}
+                <dt>{{ 'grounding.detail.verified'|trans([], 'contao_default') }}</dt>
+                <dd><time datetime="{{ grounding.dateModified }}">{{ grounding.dateModified }}</time></dd>
+            {% endif %}
+        </dl>
+    {% endif %}
+</article>

@@ -1,0 +1,9 @@
+<section class="grounding-page grounding-page__defined-terms">
+    <h2>{{ section.sectionTitle ?: 'grounding.detail.definedTerms'|trans([], 'contao_default') }}</h2>
+    <dl class="data-grid">
+        {% for term in section.definedTerms %}
+            <dt>{{ term.term }}</dt>
+            <dd>{{ term.definition }}</dd>
+        {% endfor %}
+    </dl>
+</section>
