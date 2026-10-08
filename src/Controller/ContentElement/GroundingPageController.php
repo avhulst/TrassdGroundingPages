@@ -38,7 +38,7 @@ class GroundingPageController extends AbstractContentElementController
         $this->jsonLdBuilder->addToResponseContext($dto);
 
         $template->set('grounding', $dto);
-        $template->set('standard', ['version' => GroundingStandard::VERSION, 'specUrl' => GroundingStandard::SPEC_URL]);
+        $template->set('standard', GroundingStandard::templateData());
 
         return $template->getResponse();
     }

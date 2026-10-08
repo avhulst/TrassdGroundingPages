@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Trassd\Contao\GroundingPages\Tests;
 
+use Contao\GroundingPageModel;
+use Contao\GroundingSectionModel;
 use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 
@@ -20,8 +22,8 @@ class BackendModuleTest extends TestCase
             $GLOBALS['BE_MOD']['content']['grounding_pages']['tables'],
         );
 
-        $this->assertSame('Contao\GroundingPageModel', $GLOBALS['TL_MODELS']['tl_grounding_page']);
-        $this->assertSame('Contao\GroundingSectionModel', $GLOBALS['TL_MODELS']['tl_grounding_section']);
+        $this->assertSame(GroundingPageModel::class, $GLOBALS['TL_MODELS']['tl_grounding_page']);
+        $this->assertSame(GroundingSectionModel::class, $GLOBALS['TL_MODELS']['tl_grounding_section']);
     }
 
     /**

@@ -12,14 +12,14 @@ namespace Trassd\Contao\GroundingPages\JsonLd;
  */
 final class ClassificationPropertyMap
 {
-    private const GEOGRAPHIC_SCOPE = [
+    private const array GEOGRAPHIC_SCOPE = [
         'Organization' => 'areaServed',
         'Service' => 'areaServed',
         'CreativeWork' => 'spatialCoverage',
         'Dataset' => 'spatialCoverage',
     ];
 
-    private const PARENT_ENTITY = [
+    private const array PARENT_ENTITY = [
         'Organization' => 'parentOrganization',
         'CreativeWork' => 'isPartOf',
         'Dataset' => 'isPartOf',

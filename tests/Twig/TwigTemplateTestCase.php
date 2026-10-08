@@ -10,8 +10,8 @@ use Twig\Loader\FilesystemLoader;
 use Twig\TwigFilter;
 
 /**
- * Rendert Bundle-Templates mit reinem Twig. Der trans-Filter ist ein Stub: Er gibt
- * den Schlüssel zurück, Parameter folgen in eckigen Klammern ("key[a|b]").
+ * Rendert Bundle-Templates mit reinem Twig. Der trans-Filter ist ein Stub: Er
+ * gibt den Schlüssel zurück, Parameter folgen in eckigen Klammern ("key[a|b]").
  */
 abstract class TwigTemplateTestCase extends TestCase
 {

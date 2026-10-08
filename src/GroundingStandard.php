@@ -9,7 +9,17 @@ namespace Trassd\Contao\GroundingPages;
  */
 final class GroundingStandard
 {
-    public const VERSION = '1.6.1';
+    public const string VERSION = '1.6.1';
 
-    public const SPEC_URL = 'https://groundingpage.com/spec/';
+    public const string SPEC_URL = 'https://groundingpage.com/spec/';
+
+    /**
+     * Template-Variable `standard` für den Standard-Footer.
+     *
+     * @return array{version: string, specUrl: string}
+     */
+    public static function templateData(): array
+    {
+        return ['version' => self::VERSION, 'specUrl' => self::SPEC_URL];
+    }
 }

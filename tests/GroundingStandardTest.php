@@ -16,6 +16,14 @@ class GroundingStandardTest extends TestCase
         $this->assertSame('https://groundingpage.com/spec/', GroundingStandard::SPEC_URL);
     }
 
+    public function testTemplateDataCarriesVersionAndSpecUrl(): void
+    {
+        $this->assertSame(
+            ['version' => '1.6.1', 'specUrl' => 'https://groundingpage.com/spec/'],
+            GroundingStandard::templateData(),
+        );
+    }
+
     /**
      * Guard: Die Standardversion darf in keinem Template hart codiert sein.
      */

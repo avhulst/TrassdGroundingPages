@@ -29,7 +29,8 @@
         "rector/rector": "^2.0",
         "shipmonk/composer-dependency-analyser": "^1.8",
         "symplify/easy-coding-standard": "13.2.3",
-        "twig/twig": "^3.0"
+        "twig/twig": "^3.0",
+        "symfony/finder": "^7.4"
     },
     "config": {
         "allow-plugins": {
