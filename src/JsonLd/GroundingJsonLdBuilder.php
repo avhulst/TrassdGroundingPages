@@ -56,6 +56,18 @@ final readonly class GroundingJsonLdBuilder
             $webPage->setProperty('maintainer', Schema::organization()->name($dto->maintainer));
         }
 
+        $citations = $this->buildCitations($dto);
+
+        if ([] !== $citations) {
+            $webPage->setProperty('citation', $citations);
+        }
+
+        $relatedLinks = $this->buildRelatedLinks($dto);
+
+        if ([] !== $relatedLinks) {
+            $webPage->setProperty('relatedLink', $relatedLinks);
+        }
+
         return $webPage;
     }
 
@@ -236,6 +248,59 @@ final readonly class GroundingJsonLdBuilder
         }
 
         return $props;
+    }
+
+    /**
+     * Quellen → citation. Ohne Titel dient die URL als Name; nicht-http(s)-URLs
+     * werden nie als url ausgegeben.
+     *
+     * @return list<BaseType>
+     */
+    private function buildCitations(GroundingPageDto $dto): array
+    {
+        $citations = [];
+        [$titleKey, $urlKey] = SectionRowSchema::Sources->columns();
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->sources) as $source) {
+            $title = $source[$titleKey] ?? '';
+            $url = $source[$urlKey] ?? '';
+            $hasUrl = $this->isUrl($url);
+
+            if ('' === $title && !$hasUrl) {
+                continue;
+            }
+
+            $work = Schema::creativeWork()->name('' !== $title ? $title : $url);
+
+            if ($hasUrl) {
+                $work->url($url);
+            }
+
+            $citations[] = $work;
+        }
+
+        return $citations;
+    }
+
+    /**
+     * Further Reading → relatedLink (schema.org erwartet URL-Strings).
+     *
+     * @return list<string>
+     */
+    private function buildRelatedLinks(GroundingPageDto $dto): array
+    {
+        $links = [];
+        [, $urlKey] = SectionRowSchema::FurtherReading->columns();
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->furtherReading) as $row) {
+            $url = $row[$urlKey] ?? '';
+
+            if ($this->isUrl($url)) {
+                $links[] = $url;
+            }
+        }
+
+        return array_values(array_unique($links));
     }
 
     /**

@@ -103,6 +103,62 @@ class GroundingJsonLdBuilderTest extends TestCase
         $this->assertSame('Thing', $this->builder()->buildMainEntity($dto)->toArray()['@type']);
     }
 
+    public function testSourcesBecomeCitationCreativeWorks(): void
+    {
+        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+
+        $this->assertSame(
+            [['@type' => 'CreativeWork', 'name' => 'Website', 'url' => 'https://home.cern/']],
+            $web['citation'],
+        );
+    }
+
+    public function testCitationSkipsUnusableRowsAndFallsBackToUrlAsName(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sections: [
+            new GroundingSectionDto(sectionType: 'sources', sources: [
+                ['title' => 'Nur Titel', 'url' => ''],
+                ['title' => '', 'url' => 'https://nur-url/'],
+                ['title' => '', 'url' => 'javascript:alert(1)'],
+                ['title' => 'Böse', 'url' => 'javascript:alert(1)'],
+            ]),
+        ]);
+
+        $this->assertSame(
+            [
+                ['@type' => 'CreativeWork', 'name' => 'Nur Titel'],
+                ['@type' => 'CreativeWork', 'name' => 'https://nur-url/', 'url' => 'https://nur-url/'],
+                ['@type' => 'CreativeWork', 'name' => 'Böse'],
+            ],
+            $this->builder()->buildWebPage($dto)->toArray()['citation'],
+        );
+    }
+
+    public function testFurtherReadingBecomesDeduplicatedRelatedLinks(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sections: [
+            new GroundingSectionDto(sectionType: 'further-reading', furtherReading: [
+                ['title' => 'A', 'url' => 'https://a/'],
+                ['title' => 'Nur Titel', 'url' => ''],
+                ['title' => 'Böse', 'url' => 'javascript:alert(1)'],
+            ]),
+            new GroundingSectionDto(sectionType: 'further-reading', furtherReading: [
+                ['title' => 'A again', 'url' => 'https://a/'],
+                ['title' => 'B', 'url' => 'http://b/'],
+            ]),
+        ]);
+
+        $this->assertSame(['https://a/', 'http://b/'], $this->builder()->buildWebPage($dto)->toArray()['relatedLink']);
+    }
+
+    public function testNoCitationOrRelatedLinkWithoutRows(): void
+    {
+        $web = $this->builder()->buildWebPage(new GroundingPageDto(name: 'X', schemaType: 'Thing'))->toArray();
+
+        $this->assertArrayNotHasKey('citation', $web);
+        $this->assertArrayNotHasKey('relatedLink', $web);
+    }
+
     private function builder(): GroundingJsonLdBuilder
     {
         return new GroundingJsonLdBuilder(new ResponseContextAccessor(new RequestStack()));
