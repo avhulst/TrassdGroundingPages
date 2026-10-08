@@ -27,7 +27,7 @@ class GroundingPageController extends AbstractContentElementController
 
     protected function getResponse(FragmentTemplate $template, ContentModel $model, Request $request): Response
     {
-        $page = $this->framework->getAdapter(GroundingPageModel::class)->findById((int) $model->groundingPage);
+        $page = $this->framework->getAdapter(GroundingPageModel::class)->findPublishedById((int) $model->groundingPage);
 
         if (!$page instanceof GroundingPageModel) {
             return new Response();

@@ -34,6 +34,23 @@ class GroundingPageModel extends Model
 {
     protected static $strTable = 'tl_grounding_page';
 
+    /**
+     * Findet eine veröffentlichte Grounding Page. Im Frontend-Vorschaumodus wird – wie
+     * bei den Core-Models – auch eine unveröffentlichte geliefert.
+     */
+    public static function findPublishedById(int $id, array $options = []): ?self
+    {
+        $columns = ['id=?'];
+        $values = [$id];
+
+        if (!static::isPreviewMode($options)) {
+            $columns[] = 'published=?';
+            $values[] = '1';
+        }
+
+        return static::findOneBy($columns, $values, $options);
+    }
+
     public static function findPublishedByAlias(string $alias): ?self
     {
         return static::findOneBy(['alias=?', 'published=?'], [$alias, '1']);
@@ -42,12 +59,17 @@ class GroundingPageModel extends Model
     /**
      * @return Model\Collection<GroundingSectionModel>|null
      */
-    public function getPublishedSections(): ?Model\Collection
+    public function getPublishedSections(array $options = []): ?Model\Collection
     {
-        return GroundingSectionModel::findBy(
-            ['pid=?', 'published=?'],
-            [$this->id, '1'],
-            ['order' => 'sorting ASC'],
-        );
+        $columns = ['pid=?'];
+        $values = [$this->id];
+
+        // Im Vorschaumodus auch unveröffentlichte Sections zeigen, passend zu findPublishedById().
+        if (!static::isPreviewMode($options)) {
+            $columns[] = 'published=?';
+            $values[] = '1';
+        }
+
+        return GroundingSectionModel::findBy($columns, $values, ['order' => 'sorting ASC', ...$options]);
     }
 }
