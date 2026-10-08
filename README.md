@@ -2,7 +2,7 @@
 
 *Deutsche Version: [README_DE.md](README_DE.md).*
 
-Integrates **Grounding Pages** according to the *Grounding Page Standard v1.6*
+Integrates **Grounding Pages** according to the *Grounding Page Standard v1.6.1*
 (<https://groundingpage.com/>) into Contao. A Grounding Page is a factual, clearly structured
 knowledge entry per entity — written for **humans and AI/answer engines** (GEO/AEO). The bundle
 provides a back end data model, a front end element and **exactly one** standard-compliant JSON-LD
@@ -14,7 +14,7 @@ document per page.
   child table holding the content sections.
 - **Embedded into the page.** The complete Grounding Page is placed as a **content element** inside
   an article and renders within the normal page layout (header, footer, theme).
-- **Full v1.6 ontology** (18 entity classes mapped to schema.org, fallback `Thing`), extensible via
+- **Full v1.6.1 ontology** (18 entity classes mapped to schema.org, fallback `Thing`), extensible via
   a free-text field for arbitrary `@type` values.
 
 ## Requirements
@@ -36,8 +36,9 @@ vendor/bin/contao-console cache:clear
 Under **Content → Grounding Pages**, create an entity:
 
 - **Entity:** name, alias, language, entity type, optional custom schema.org type.
-- **Definition & distinction:** canonical definition, segment, “not to be confused with …”,
-  external identity URLs (`sameAs`, e.g. Wikidata/Wikipedia/LinkedIn).
+- **Definition & distinction:** canonical definition, segment, classification (geographic scope,
+  parent entity with URL, key relationships), “not to be confused with …”, external identity URLs
+  (`sameAs`, e.g. Wikidata/Wikipedia/LinkedIn).
 - **Governance:** publisher, maintainer, status, version, publication date, last verified, a
   changelog and a correction/contact path.
 
@@ -51,6 +52,11 @@ the matching input fields:
 | Defined terms   | Term · Definition                             |
 | FAQ             | Question · Answer                             |
 | Sources         | Title · URL (+ identifiers: Label · Value)    |
+| Further reading | Title · URL                                   |
+
+Section order is free (Standard v1.6.1: recommended, not mandatory). “Further reading” belongs in
+the lower part of the page and may come before or after the FAQ and sources. Classification metadata
+appears compactly in the page header, not as a separate section.
 
 The page header (name, definition, distinction, governance) is always rendered from the entity's
 main data — it is not a separate section.
@@ -77,7 +83,10 @@ language trees automatically.
 
 Each page produces **one** graph containing a `WebPage` whose `mainEntity` is the resolved main
 entity (e.g. `Organization`, `Person`, `Product`). `sameAs`, facts (`additionalProperty`),
-`DefinedTerm` and `FAQPage` nodes are generated from the sections. Output runs through Contao's
+`DefinedTerm` and `FAQPage` nodes are generated from the sections. Sources appear as `citation` and
+further reading as `relatedLink` on the `WebPage`. Classification is mirrored with type-appropriate
+properties (`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), otherwise as
+`PropertyValue`. Segment and relationships are `PropertyValue` entries in `additionalProperty`. Output runs through Contao's
 response context, so the `<script type="application/ld+json">` ends up in the `<head>` — even when
 the element sits in the middle of the page content. Verifiable with the Schema.org validator.
 
