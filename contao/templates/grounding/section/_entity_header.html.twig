@@ -15,14 +15,14 @@
 
     {% if grounding.definition %}
         <p class="grounding-page__lead" itemprop="description">
-            {% if grounding.name %}<strong>{{ grounding.name }}</strong> {% endif %}{{ grounding.definition }}
+            {% if grounding.name %}<strong>{{ grounding.name }}</strong> {% endif %}{{ grounding.definition|nl2br }}
         </p>
     {% endif %}
 
     {% if grounding.distinction %}
         <section class="grounding-page grounding-page__distinction">
             <h2>{{ 'grounding.detail.distinction'|trans([], 'contao_default') }}</h2>
-            <p>{{ grounding.distinction }}</p>
+            <p>{{ grounding.distinction|nl2br }}</p>
         </section>
     {% endif %}
 
