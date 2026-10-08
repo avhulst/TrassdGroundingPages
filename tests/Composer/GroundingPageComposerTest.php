@@ -222,6 +222,24 @@ class GroundingPageComposerTest extends ContaoTestCase
         $this->assertSame([], $dto->relationships);
     }
 
+    public function testHumanNoticeIsShownByDefaultAndForLegacyRecords(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage(['title' => 'X', 'entityType' => 'organization']));
+
+        $this->assertTrue($dto->showHumanNotice);
+    }
+
+    public function testHumanNoticeCanBeHidden(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'X',
+            'entityType' => 'organization',
+            'hideHumanNotice' => '1',
+        ]));
+
+        $this->assertFalse($dto->showHumanNotice);
+    }
+
     public function testCustomSchemaTypeIsFlagged(): void
     {
         $dto = (new GroundingPageComposer())->compose($this->mockPage([

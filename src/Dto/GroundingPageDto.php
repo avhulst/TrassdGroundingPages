@@ -35,6 +35,7 @@ final readonly class GroundingPageDto
         public string $parentEntityUrl = '',
         public array $relationships = [],
         public bool $isCustomSchemaType = false,
+        public bool $showHumanNotice = true,
     ) {
     }
 }

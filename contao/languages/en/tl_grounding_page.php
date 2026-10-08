@@ -29,6 +29,7 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['dateVerified'] = ['Last verified', 'Da
 $GLOBALS['TL_LANG']['tl_grounding_page']['published'] = ['Publish', 'Make the grounding page visible in the front end.'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['changelog'] = ['Changelog', 'Rows of date and change (governance, shown in the footer).'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['correctionContact'] = ['Correction / contact path', 'E-mail or URL for correction notices (shown in the footer).'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['hideHumanNotice'] = ['Hide notice for human readers', 'Hides the notice box in the page header (shown by default).'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['col_changeDate'] = 'Date';
 $GLOBALS['TL_LANG']['tl_grounding_page']['col_change'] = 'Change';
 $GLOBALS['TL_LANG']['tl_grounding_page']['col_relation'] = 'Relation';

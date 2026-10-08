@@ -29,6 +29,7 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['dateVerified'] = ['Zuletzt geprüft', 
 $GLOBALS['TL_LANG']['tl_grounding_page']['published'] = ['Veröffentlichen', 'Die Grounding Page im Frontend sichtbar machen.'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['changelog'] = ['Änderungsprotokoll', 'Zeilen aus Datum und Änderung (Governance, sichtbar im Footer).'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['correctionContact'] = ['Korrektur-/Kontaktpfad', 'E-Mail oder URL für Korrekturhinweise (sichtbar im Footer).'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['hideHumanNotice'] = ['Hinweis für menschliche Leser ausblenden', 'Blendet den Hinweiskasten im Seitenkopf aus (standardmäßig sichtbar).'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['col_changeDate'] = 'Datum';
 $GLOBALS['TL_LANG']['tl_grounding_page']['col_change'] = 'Änderung';
 $GLOBALS['TL_LANG']['tl_grounding_page']['col_relation'] = 'Beziehung';

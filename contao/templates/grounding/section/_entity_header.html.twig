@@ -9,7 +9,9 @@
         <p class="grounding-page__type">{{ ('grounding.entityType.' ~ grounding.entityType)|trans([], 'contao_default') }}</p>
     {% endif %}
 
-    {% include "@Contao/grounding/_human_notice.html.twig" %}
+    {% if grounding.showHumanNotice %}
+        {% include "@Contao/grounding/_human_notice.html.twig" %}
+    {% endif %}
 
     {% if grounding.definition %}
         <p class="grounding-page__lead" itemprop="description">

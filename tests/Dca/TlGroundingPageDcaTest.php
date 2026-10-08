@@ -49,7 +49,7 @@ class TlGroundingPageDcaTest extends TestCase
             'title', 'alias', 'language', 'entityType', 'customSchemaType', 'definition',
             'segment', 'distinction', 'sameAs', 'publisher', 'maintainer', 'status',
             'entryVersion', 'datePublished', 'dateVerified', 'changelog', 'correctionContact', 'published',
-            'geographicScope', 'parentEntity', 'parentEntityUrl', 'relationships',
+            'geographicScope', 'parentEntity', 'parentEntityUrl', 'relationships', 'hideHumanNotice',
         ] as $field) {
             yield $field => [$field];
         }
@@ -90,6 +90,16 @@ class TlGroundingPageDcaTest extends TestCase
             '{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs',
             $this->loadDca()['palettes']['default'],
         );
+    }
+
+    public function testHideHumanNoticeIsCheckboxInGovernanceLegendDefaultingToShown(): void
+    {
+        $dca = $this->loadDca();
+        $field = $dca['fields']['hideHumanNotice'];
+
+        $this->assertSame('checkbox', $field['inputType']);
+        $this->assertSame("char(1) NOT NULL default ''", $field['sql']);
+        $this->assertStringContainsString('correctionContact,hideHumanNotice;', $dca['palettes']['default']);
     }
 
     public function testParentEntityUrlIsValidatedAsUrl(): void

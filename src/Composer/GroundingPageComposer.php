@@ -46,6 +46,7 @@ final class GroundingPageComposer
             parentEntityUrl: trim((string) $page->parentEntityUrl),
             relationships: $this->relationships($page->relationships),
             isCustomSchemaType: '' !== trim((string) $page->customSchemaType),
+            showHumanNotice: '1' !== (string) $page->hideHumanNotice,
         );
     }
 

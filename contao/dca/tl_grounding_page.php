@@ -50,7 +50,7 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact;{publish_legend},published',
+        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact,hideHumanNotice;{publish_legend},published',
     ],
     'fields' => [
         'id' => [
@@ -174,6 +174,12 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
             'inputType' => 'text',
             'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
             'sql' => "varchar(255) NOT NULL default ''",
+        ],
+        // Verneint formuliert: leere Spalte (Bestandsdaten, neue Datensätze) = Hinweis sichtbar.
+        'hideHumanNotice' => [
+            'inputType' => 'checkbox',
+            'eval' => ['tl_class' => 'w50 m12'],
+            'sql' => "char(1) NOT NULL default ''",
         ],
         'published' => [
             'inputType' => 'checkbox',
