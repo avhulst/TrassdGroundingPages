@@ -46,4 +46,4 @@ $GLOBALS['TL_LANG']['grounding']['entityType']['event'] = 'Veranstaltung';
 $GLOBALS['TL_LANG']['grounding']['entityType']['metric'] = 'Kennzahl';
 $GLOBALS['TL_LANG']['grounding']['entityType']['project'] = 'Projekt';
 
-$GLOBALS['TL_LANG']['CTE']['grounding_page'] = ['Grounding Page', 'Eine komplette Grounding Page (Standard v1.6) in einem Artikel ausgeben.'];
+$GLOBALS['TL_LANG']['CTE']['grounding_page'] = ['Grounding Page', 'Eine komplette Grounding Page (Standard v1.6.1) in einem Artikel ausgeben.'];

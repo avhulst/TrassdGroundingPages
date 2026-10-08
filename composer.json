@@ -1,7 +1,7 @@
 {
     "name": "trassd/contao-grounding-pages",
     "type": "contao-bundle",
-    "description": "Integrates Grounding Pages (Standard v1.6) into Contao: one record = one entity (parent + child table), embedded as a content element, full schema.org ontology and exactly one standard-compliant JSON-LD graph per page (GEO/AEO).",
+    "description": "Integrates Grounding Pages (Standard v1.6.1) into Contao: one record = one entity (parent + child table), embedded as a content element, full schema.org ontology and exactly one standard-compliant JSON-LD graph per page (GEO/AEO).",
     "license": "LGPL-3.0-or-later",
     "authors": [
       {
@@ -28,7 +28,8 @@
         "phpunit/phpunit": "^12.4",
         "rector/rector": "^2.0",
         "shipmonk/composer-dependency-analyser": "^1.8",
-        "symplify/easy-coding-standard": "13.2.3"
+        "symplify/easy-coding-standard": "13.2.3",
+        "twig/twig": "^3.0"
     },
     "config": {
         "allow-plugins": {

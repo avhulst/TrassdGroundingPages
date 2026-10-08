@@ -13,6 +13,7 @@ use Contao\GroundingPageModel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Trassd\Contao\GroundingPages\Composer\GroundingPageComposer;
+use Trassd\Contao\GroundingPages\GroundingStandard;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
 
 #[AsContentElement(type: 'grounding_page', category: 'includes', template: 'content_element/grounding_page')]
@@ -37,6 +38,7 @@ class GroundingPageController extends AbstractContentElementController
         $this->jsonLdBuilder->addToResponseContext($dto);
 
         $template->set('grounding', $dto);
+        $template->set('standard', ['version' => GroundingStandard::VERSION, 'specUrl' => GroundingStandard::SPEC_URL]);
 
         return $template->getResponse();
     }
