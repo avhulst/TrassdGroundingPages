@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Trassd\Contao\GroundingPages\Tests\Twig;
 
 use PHPUnit\Framework\TestCase;
+use Trassd\Contao\GroundingPages\Twig\GroundingStandardExtension;
 use Twig\Environment;
 use Twig\Loader\FilesystemLoader;
 use Twig\TwigFilter;
@@ -24,6 +25,7 @@ abstract class TwigTemplateTestCase extends TestCase
         $loader->addPath(\dirname(__DIR__, 2).'/contao/templates', 'Contao');
 
         $twig = new Environment($loader, ['autoescape' => 'html']);
+        $twig->addExtension(new GroundingStandardExtension());
         $twig->addFilter(new TwigFilter(
             'trans',
             static fn (string $id, array $params = [], string|null $domain = null): string => [] === $params

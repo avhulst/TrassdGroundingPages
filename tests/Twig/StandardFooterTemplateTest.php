@@ -21,6 +21,17 @@ class StandardFooterTemplateTest extends TwigTemplateTestCase
         $this->assertStringNotContainsString('[1.6]', $html);
     }
 
+    public function testFooterWorksWithoutStandardContextVariable(): void
+    {
+        // Überschriebene Templates reichen keine Variable `standard` durch.
+        $html = $this->render('@Contao/grounding/_page.html.twig', [
+            'grounding' => new GroundingPageDto(name: 'CERN', schemaType: 'Organization'),
+        ]);
+
+        $this->assertStringContainsString('grounding.detail.standardLinkText[1.6.1]', $html);
+        $this->assertStringContainsString('href="https://groundingpage.com/spec/"', $html);
+    }
+
     public function testVerifiedVariantCarriesVersionAndDate(): void
     {
         $html = $this->render('@Contao/grounding/_page.html.twig', [

@@ -30,18 +30,19 @@
             {% endif %}
 
             {% if grounding.correctionContact %}
-                {%- set href = ('@' in grounding.correctionContact and '://' not in grounding.correctionContact)
-                    ? 'mailto:' ~ grounding.correctionContact
-                    : grounding.correctionContact -%}
+                {%- set contact = grounding.correctionContact -%}
+                {%- set href = ('@' in contact and '://' not in contact) ? 'mailto:' ~ contact
+                    : ((contact starts with 'https://' or contact starts with 'http://') ? contact : null) -%}
                 <p class="grounding-page__correction">
                     {{ 'grounding.detail.reportCorrection'|trans([], 'contao_default') }}
-                    <a href="{{ href }}" rel="noopener">{{ grounding.correctionContact }}</a>
+                    {% if href %}<a href="{{ href }}" rel="noopener">{{ contact }}</a>{% else %}{{ contact }}{% endif %}
                 </p>
             {% endif %}
         </section>
     {% endif %}
 
     <p class="grounding-page__standard-text">
+        {%- set standard = grounding_standard() -%}
         {%- set link = '<a href="' ~ standard.specUrl|e ~ '" rel="noopener" target="_blank">'
             ~ ('grounding.detail.standardLinkText'|trans([standard.version], 'contao_default'))
             ~ '</a>' -%}
