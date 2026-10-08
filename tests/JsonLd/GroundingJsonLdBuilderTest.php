@@ -159,6 +159,100 @@ class GroundingJsonLdBuilderTest extends TestCase
         $this->assertArrayNotHasKey('relatedLink', $web);
     }
 
+    public function testOrganizationGetsAreaServedAndParentOrganization(): void
+    {
+        $main = $this->builder()->buildMainEntity(new GroundingPageDto(
+            name: 'CERN',
+            schemaType: 'Organization',
+            geographicScope: 'International',
+            parentEntity: 'UNESCO',
+            parentEntityUrl: 'https://www.unesco.org/',
+        ))->toArray();
+
+        $this->assertSame('International', $main['areaServed']);
+        $this->assertSame('Organization', $main['parentOrganization']['@type']);
+        $this->assertSame('UNESCO', $main['parentOrganization']['name']);
+        $this->assertSame('https://www.unesco.org/', $main['parentOrganization']['url']);
+        $this->assertArrayNotHasKey('additionalProperty', $main);
+    }
+
+    public function testCreativeWorkGetsSpatialCoverageAndIsPartOf(): void
+    {
+        $main = $this->builder()->buildMainEntity(new GroundingPageDto(
+            name: 'Spec',
+            schemaType: 'CreativeWork',
+            geographicScope: 'Weltweit',
+            parentEntity: 'Grounding Page Project',
+        ))->toArray();
+
+        $this->assertSame('Weltweit', $main['spatialCoverage']);
+        $this->assertSame('CreativeWork', $main['isPartOf']['@type']);
+        $this->assertSame('Grounding Page Project', $main['isPartOf']['name']);
+        $this->assertArrayNotHasKey('url', $main['isPartOf']);
+    }
+
+    public function testOtherAndCustomTypesFallBackToPropertyValues(): void
+    {
+        foreach ([
+            new GroundingPageDto(name: 'P', schemaType: 'Person', geographicScope: 'Hamburg', parentEntity: 'Firma', parentEntityUrl: 'https://firma/'),
+            new GroundingPageDto(name: 'O', schemaType: 'Organization', geographicScope: 'Hamburg', parentEntity: 'Firma', parentEntityUrl: 'https://firma/', isCustomSchemaType: true),
+        ] as $dto) {
+            $main = $this->builder()->buildMainEntity($dto)->toArray();
+
+            foreach (['areaServed', 'spatialCoverage', 'parentOrganization', 'isPartOf'] as $typed) {
+                $this->assertArrayNotHasKey($typed, $main, $dto->schemaType);
+            }
+
+            $props = array_column($main['additionalProperty'], null, 'name');
+            $this->assertSame('Hamburg', $props['geographicScope']['value']);
+            $this->assertSame('Firma', $props['parentEntity']['value']);
+            $this->assertSame('https://firma/', $props['parentEntity']['url']);
+        }
+    }
+
+    public function testUnsafeParentUrlIsDropped(): void
+    {
+        $main = $this->builder()->buildMainEntity(new GroundingPageDto(
+            name: 'CERN',
+            schemaType: 'Organization',
+            parentEntity: 'UNESCO',
+            parentEntityUrl: 'javascript:alert(1)',
+        ))->toArray();
+
+        $this->assertArrayNotHasKey('url', $main['parentOrganization']);
+    }
+
+    public function testSegmentAndRelationshipsBecomePropertyValues(): void
+    {
+        $main = $this->builder()->buildMainEntity(new GroundingPageDto(
+            name: 'CERN',
+            schemaType: 'Organization',
+            segment: 'Forschung',
+            relationships: [
+                ['relation' => 'Betreibt', 'name' => 'LHC', 'url' => 'https://home.cern/lhc'],
+                ['relation' => 'Partner', 'name' => 'Y', 'url' => 'javascript:alert(1)'],
+            ],
+        ))->toArray();
+
+        $props = array_column($main['additionalProperty'], null, 'name');
+
+        $this->assertSame(['@type' => 'PropertyValue', 'name' => 'category', 'value' => 'Forschung'], $props['category']);
+        $this->assertSame(
+            ['@type' => 'PropertyValue', 'name' => 'Betreibt', 'value' => 'LHC', 'url' => 'https://home.cern/lhc'],
+            $props['Betreibt'],
+        );
+        $this->assertSame(['@type' => 'PropertyValue', 'name' => 'Partner', 'value' => 'Y'], $props['Partner']);
+    }
+
+    public function testNoClassificationOutputWhenEmpty(): void
+    {
+        $main = $this->builder()->buildMainEntity(new GroundingPageDto(name: 'X', schemaType: 'Organization'))->toArray();
+
+        foreach (['areaServed', 'parentOrganization', 'additionalProperty'] as $key) {
+            $this->assertArrayNotHasKey($key, $main);
+        }
+    }
+
     private function builder(): GroundingJsonLdBuilder
     {
         return new GroundingJsonLdBuilder(new ResponseContextAccessor(new RequestStack()));

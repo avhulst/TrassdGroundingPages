@@ -92,6 +92,29 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
         $this->expectNotToPerformAssertions();
     }
 
+    public function testClassificationOnPersonUsesOnlyAdditionalProperty(): void
+    {
+        [, $manager, $builder] = $this->bootContext();
+
+        $builder->addToResponseContext(new GroundingPageDto(
+            name: 'Ada',
+            schemaType: 'Person',
+            geographicScope: 'London',
+            parentEntity: 'Analytical Society',
+        ));
+
+        $nodes = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
+        $mains = array_values(array_filter($nodes, static fn (array $n): bool => '#main' === ($n['@id'] ?? null)));
+
+        $this->assertCount(1, $mains);
+
+        foreach (['areaServed', 'spatialCoverage', 'parentOrganization', 'isPartOf'] as $typed) {
+            $this->assertArrayNotHasKey($typed, $mains[0]);
+        }
+
+        $this->assertContains('geographicScope', array_column($mains[0]['additionalProperty'], 'name'));
+    }
+
     private function dto(): GroundingPageDto
     {
         return new GroundingPageDto(

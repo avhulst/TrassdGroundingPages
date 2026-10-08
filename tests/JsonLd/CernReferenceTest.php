@@ -67,6 +67,20 @@ class CernReferenceTest extends TestCase
         $this->assertContains('FAQPage', $types);
     }
 
+    public function testClassificationCitationAndRelatedLinkAreMirrored(): void
+    {
+        $nodes = $this->graph();
+        $webPage = $this->firstOfType($nodes, 'WebPage');
+        $main = $this->firstOfType($nodes, 'Organization', '#main');
+        $byName = array_column($main['additionalProperty'], 'value', 'name');
+
+        $this->assertSame('International', $main['areaServed']);
+        $this->assertSame('Zwischenstaatliche wissenschaftliche Forschungsorganisation', $byName['category']);
+        $this->assertSame('Large Hadron Collider', $byName['Betreibt']);
+        $this->assertSame(['https://home.cern/resources/annual-report'], $webPage['relatedLink']);
+        $this->assertSame('Offizielle Website', $webPage['citation'][0]['name']);
+    }
+
     private function cern(): GroundingPageDto
     {
         return new GroundingPageDto(
@@ -88,6 +102,10 @@ class CernReferenceTest extends TestCase
             inLanguage: 'de',
             datePublished: '1954-09-29',
             dateModified: '2026-06-20',
+            geographicScope: 'International',
+            relationships: [
+                ['relation' => 'Betreibt', 'name' => 'Large Hadron Collider', 'url' => 'https://home.cern/science/accelerators/large-hadron-collider'],
+            ],
             sections: [
                 new GroundingSectionDto(sectionType: 'fact-grid', sectionTitle: 'CERN: Kernfakten', factGrid: [
                     ['label' => 'Gegründet', 'value' => '29. September 1954'],
@@ -110,6 +128,9 @@ class CernReferenceTest extends TestCase
                         ['label' => 'ROR', 'value' => 'https://ror.org/01ggx4157'],
                     ],
                 ),
+                new GroundingSectionDto(sectionType: 'further-reading', sectionTitle: 'CERN: Weiterführende Literatur', furtherReading: [
+                    ['title' => 'CERN Annual Report', 'url' => 'https://home.cern/resources/annual-report'],
+                ]),
             ],
         );
     }

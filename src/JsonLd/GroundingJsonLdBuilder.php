@@ -85,6 +85,16 @@ final readonly class GroundingJsonLdBuilder
             $main->setProperty('sameAs', $sameAs);
         }
 
+        $classification = ClassificationPropertyMap::resolve($dto->schemaType, $dto->isCustomSchemaType);
+
+        if ('' !== $dto->geographicScope && null !== $classification['geographicScope']) {
+            $main->setProperty($classification['geographicScope'], $dto->geographicScope);
+        }
+
+        if ('' !== $dto->parentEntity && null !== $classification['parentEntity']) {
+            $main->setProperty($classification['parentEntity'], $this->buildParentNode($dto, $classification['parentEntity']));
+        }
+
         $additional = $this->buildAdditionalProperties($dto);
 
         if ([] !== $additional) {
@@ -239,6 +249,24 @@ final readonly class GroundingJsonLdBuilder
             }
         }
 
+        if ('' !== $dto->segment) {
+            $props[] = ['@type' => 'PropertyValue', 'name' => 'category', 'value' => $dto->segment];
+        }
+
+        $classification = ClassificationPropertyMap::resolve($dto->schemaType, $dto->isCustomSchemaType);
+
+        if ('' !== $dto->geographicScope && null === $classification['geographicScope']) {
+            $props[] = ['@type' => 'PropertyValue', 'name' => 'geographicScope', 'value' => $dto->geographicScope];
+        }
+
+        if ('' !== $dto->parentEntity && null === $classification['parentEntity']) {
+            $props[] = $this->propertyValue('parentEntity', $dto->parentEntity, $dto->parentEntityUrl);
+        }
+
+        foreach ($dto->relationships as $relationship) {
+            $props[] = $this->propertyValue($relationship['relation'] ?? '', $relationship['name'] ?? '', $relationship['url'] ?? '');
+        }
+
         if ('' !== $dto->status) {
             $props[] = ['@type' => 'PropertyValue', 'name' => 'status', 'value' => $dto->status];
         }
@@ -248,6 +276,32 @@ final readonly class GroundingJsonLdBuilder
         }
 
         return $props;
+    }
+
+    private function buildParentNode(GroundingPageDto $dto, string $property): BaseType
+    {
+        $node = 'parentOrganization' === $property ? Schema::organization() : Schema::creativeWork();
+        $node->name($dto->parentEntity);
+
+        if ($this->isUrl($dto->parentEntityUrl)) {
+            $node->url($dto->parentEntityUrl);
+        }
+
+        return $node;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function propertyValue(string $name, string $value, string $url): array
+    {
+        $prop = ['@type' => 'PropertyValue', 'name' => $name, 'value' => $value];
+
+        if ($this->isUrl($url)) {
+            $prop['url'] = $url;
+        }
+
+        return $prop;
     }
 
     /**
