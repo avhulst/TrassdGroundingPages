@@ -15,6 +15,7 @@ $GLOBALS['TL_LANG']['grounding']['detail']['published'] = 'Veröffentlicht';
 $GLOBALS['TL_LANG']['grounding']['detail']['changelog'] = 'Änderungsprotokoll';
 $GLOBALS['TL_LANG']['grounding']['detail']['reportCorrection'] = 'Korrektur melden:';
 $GLOBALS['TL_LANG']['grounding']['detail']['faq'] = 'Häufige Fragen';
+$GLOBALS['TL_LANG']['grounding']['detail']['furtherReading'] = 'Weiterführende Literatur zu %1$s';
 $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment'] = '%1$s ist dem Segment %2$s zugeordnet.';
 $GLOBALS['TL_LANG']['grounding']['detail']['standardLinkText'] = 'Grounding Page Standard %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['standardText'] = 'Diese Grounding Page folgt dem %1$s (v%2$s).';

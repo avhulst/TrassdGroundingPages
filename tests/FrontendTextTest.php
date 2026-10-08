@@ -31,6 +31,7 @@ class FrontendTextTest extends TestCase
         // %name%-Platzhalter.
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment']);
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['standardText']);
+        $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['furtherReading']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['grounding']['humanNotice']['label']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['CTE']['grounding_page'][0]);
     }

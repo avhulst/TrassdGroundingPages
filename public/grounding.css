@@ -122,13 +122,15 @@
     color: var(--trassd-grounding-muted);
 }
 
-.grounding-page__source-list {
+.grounding-page__source-list,
+.grounding-page__further-reading-list {
     list-style: none;
     padding-left: 0;
     margin: 1.25rem 0 0;
 }
 
-.grounding-page__sources a {
+.grounding-page__sources a,
+.grounding-page__further-reading a {
     color: var(--trassd-grounding-accent);
     text-decoration: underline;
 }
