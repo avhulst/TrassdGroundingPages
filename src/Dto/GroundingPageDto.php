@@ -10,6 +10,7 @@ final readonly class GroundingPageDto
      * @param list<string>                $sameAs
      * @param list<array<string, string>> $changelog
      * @param list<GroundingSectionDto>   $sections
+     * @param list<array<string, string>> $relationships
      */
     public function __construct(
         public string $name,
@@ -29,6 +30,11 @@ final readonly class GroundingPageDto
         public string|null $dateModified = null,
         public array $changelog = [],
         public array $sections = [],
+        public string $geographicScope = '',
+        public string $parentEntity = '',
+        public string $parentEntityUrl = '',
+        public array $relationships = [],
+        public bool $isCustomSchemaType = false,
     ) {
     }
 }

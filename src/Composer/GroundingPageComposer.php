@@ -39,8 +39,13 @@ final class GroundingPageComposer
             inLanguage: (string) $page->language,
             datePublished: $this->formatDate($page->datePublished),
             dateModified: $this->dateModified($page),
-            changelog: $this->pairs($page->changelog, 'date', 'change'),
+            changelog: $this->rowsOf($page->changelog, 'date', 'change'),
             sections: $sections,
+            geographicScope: trim((string) $page->geographicScope),
+            parentEntity: trim((string) $page->parentEntity),
+            parentEntityUrl: trim((string) $page->parentEntityUrl),
+            relationships: $this->relationships($page->relationships),
+            isCustomSchemaType: '' !== trim((string) $page->customSchemaType),
         );
     }
 
@@ -73,7 +78,7 @@ final class GroundingPageComposer
             return [];
         }
 
-        return $this->pairs($section->{$schema->fieldName()}, ...$schema->columns());
+        return $this->rowsOf($section->{$schema->fieldName()}, ...$schema->columns());
     }
 
     private function resolveSchemaType(GroundingPageModel $page): string
@@ -104,9 +109,12 @@ final class GroundingPageComposer
     }
 
     /**
+     * Liest ein rowWizard-Feld: trimmt alle Spalten und verwirft Zeilen, deren Werte
+     * sämtlich leer sind.
+     *
      * @return list<array<string, string>>
      */
-    private function pairs(mixed $raw, string $keyA, string $keyB): array
+    private function rowsOf(mixed $raw, string ...$keys): array
     {
         $out = [];
 
@@ -115,17 +123,33 @@ final class GroundingPageComposer
                 continue;
             }
 
-            $valueA = trim((string) ($row[$keyA] ?? ''));
-            $valueB = trim((string) ($row[$keyB] ?? ''));
+            $values = [];
 
-            if ('' === $valueA && '' === $valueB) {
+            foreach ($keys as $key) {
+                $values[$key] = trim((string) ($row[$key] ?? ''));
+            }
+
+            if ('' === implode('', $values)) {
                 continue;
             }
 
-            $out[] = [$keyA => $valueA, $keyB => $valueB];
+            $out[] = $values;
         }
 
         return $out;
+    }
+
+    /**
+     * Beziehungen brauchen Beziehung und Name; die URL ist optional.
+     *
+     * @return list<array<string, string>>
+     */
+    private function relationships(mixed $raw): array
+    {
+        return array_values(array_filter(
+            $this->rowsOf($raw, 'relation', 'name', 'url'),
+            static fn (array $row): bool => '' !== $row['relation'] && '' !== $row['name'],
+        ));
     }
 
     /**

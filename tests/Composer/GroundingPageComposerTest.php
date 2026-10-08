@@ -182,6 +182,57 @@ class GroundingPageComposerTest extends ContaoTestCase
         $this->assertSame([['date' => '2026-06-20', 'change' => 'Initiale Fassung']], $dto->changelog);
     }
 
+    public function testComposesClassificationFieldsAndDropsIncompleteRelationships(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'CERN',
+            'entityType' => 'organization',
+            'geographicScope' => ' International ',
+            'parentEntity' => ' UNESCO ',
+            'parentEntityUrl' => ' https://www.unesco.org/ ',
+            'relationships' => serialize([
+                ['relation' => 'Betreibt', 'name' => 'Large Hadron Collider', 'url' => 'https://home.cern/lhc'],
+                ['relation' => '', 'name' => 'Ohne Beziehung', 'url' => ''],
+                ['relation' => 'Ohne Name', 'name' => '', 'url' => ''],
+                ['relation' => '', 'name' => '', 'url' => 'https://nur-url/'],
+                ['relation' => ' Mitglied von ', 'name' => ' EIROforum ', 'url' => ''],
+            ]),
+        ]));
+
+        $this->assertSame('International', $dto->geographicScope);
+        $this->assertSame('UNESCO', $dto->parentEntity);
+        $this->assertSame('https://www.unesco.org/', $dto->parentEntityUrl);
+        $this->assertSame(
+            [
+                ['relation' => 'Betreibt', 'name' => 'Large Hadron Collider', 'url' => 'https://home.cern/lhc'],
+                ['relation' => 'Mitglied von', 'name' => 'EIROforum', 'url' => ''],
+            ],
+            $dto->relationships,
+        );
+        $this->assertFalse($dto->isCustomSchemaType);
+    }
+
+    public function testLegacyRecordWithoutClassificationColumnsYieldsDefaults(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage(['title' => 'Alt', 'entityType' => 'organization']));
+
+        $this->assertSame('', $dto->geographicScope);
+        $this->assertSame('', $dto->parentEntity);
+        $this->assertSame('', $dto->parentEntityUrl);
+        $this->assertSame([], $dto->relationships);
+    }
+
+    public function testCustomSchemaTypeIsFlagged(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'X',
+            'entityType' => 'organization',
+            'customSchemaType' => 'Organization',
+        ]));
+
+        $this->assertTrue($dto->isCustomSchemaType);
+    }
+
     /**
      * @param array<string, mixed>        $properties
      * @param list<GroundingSectionModel> $sections

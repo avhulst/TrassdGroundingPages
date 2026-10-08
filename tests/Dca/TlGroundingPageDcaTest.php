@@ -49,6 +49,7 @@ class TlGroundingPageDcaTest extends TestCase
             'title', 'alias', 'language', 'entityType', 'customSchemaType', 'definition',
             'segment', 'distinction', 'sameAs', 'publisher', 'maintainer', 'status',
             'entryVersion', 'datePublished', 'dateVerified', 'changelog', 'correctionContact', 'published',
+            'geographicScope', 'parentEntity', 'parentEntityUrl', 'relationships',
         ] as $field) {
             yield $field => [$field];
         }
@@ -80,6 +81,28 @@ class TlGroundingPageDcaTest extends TestCase
         $this->assertSame('rowWizard', $field['inputType']);
         $this->assertArrayHasKey('date', $field['fields']);
         $this->assertArrayHasKey('change', $field['fields']);
+        $this->assertSame('blob', $field['sql']['type']);
+    }
+
+    public function testClassificationFieldsFollowSegmentInDefinitionLegend(): void
+    {
+        $this->assertStringContainsString(
+            '{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs',
+            $this->loadDca()['palettes']['default'],
+        );
+    }
+
+    public function testParentEntityUrlIsValidatedAsUrl(): void
+    {
+        $this->assertSame('url', $this->loadDca()['fields']['parentEntityUrl']['eval']['rgxp']);
+    }
+
+    public function testRelationshipsIsNamedThreeColumnRowWizardBlob(): void
+    {
+        $field = $this->loadDca()['fields']['relationships'];
+
+        $this->assertSame('rowWizard', $field['inputType']);
+        $this->assertSame(['relation', 'name', 'url'], array_keys($field['fields']));
         $this->assertSame('blob', $field['sql']['type']);
     }
 

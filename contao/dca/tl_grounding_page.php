@@ -50,7 +50,7 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact;{publish_legend},published',
+        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact;{publish_legend},published',
     ],
     'fields' => [
         'id' => [
@@ -95,6 +95,31 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
             'inputType' => 'text',
             'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
             'sql' => "varchar(255) NOT NULL default ''",
+        ],
+        'geographicScope' => [
+            'inputType' => 'text',
+            'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
+            'sql' => "varchar(255) NOT NULL default ''",
+        ],
+        'parentEntity' => [
+            'inputType' => 'text',
+            'eval' => ['maxlength' => 255, 'tl_class' => 'w50'],
+            'sql' => "varchar(255) NOT NULL default ''",
+        ],
+        'parentEntityUrl' => [
+            'inputType' => 'text',
+            'eval' => ['rgxp' => 'url', 'decodeEntities' => true, 'maxlength' => 2048, 'tl_class' => 'w50'],
+            'sql' => "varchar(2048) NOT NULL default ''",
+        ],
+        'relationships' => [
+            'inputType' => 'rowWizard',
+            'fields' => [
+                'relation' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_page']['col_relation'], 'inputType' => 'text'],
+                'name' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_page']['col_relationName'], 'inputType' => 'text'],
+                'url' => ['label' => &$GLOBALS['TL_LANG']['tl_grounding_page']['col_relationUrl'], 'inputType' => 'text'],
+            ],
+            'eval' => ['tl_class' => 'clr'],
+            'sql' => ['type' => 'blob', 'length' => AbstractMySQLPlatform::LENGTH_LIMIT_BLOB, 'notnull' => false],
         ],
         'distinction' => [
             'inputType' => 'textarea',
