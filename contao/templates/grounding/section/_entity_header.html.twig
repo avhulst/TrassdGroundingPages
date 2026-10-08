@@ -30,7 +30,8 @@
         </p>
     {% endif %}
 
-    {% if grounding.publisher or grounding.status or grounding.dateModified %}
+    {% if grounding.publisher or grounding.status or grounding.dateModified
+        or grounding.geographicScope or grounding.parentEntity or grounding.relationships %}
         <dl class="grounding-page__meta data-grid">
             {% if grounding.publisher %}
                 <dt>{{ 'grounding.detail.publisher'|trans([], 'contao_default') }}</dt>
@@ -39,6 +40,28 @@
             {% if grounding.status %}
                 <dt>{{ 'grounding.detail.status'|trans([], 'contao_default') }}</dt>
                 <dd>{{ grounding.status }}</dd>
+            {% endif %}
+            {% if grounding.geographicScope %}
+                <dt>{{ 'grounding.detail.geographicScope'|trans([], 'contao_default') }}</dt>
+                <dd>{{ grounding.geographicScope }}</dd>
+            {% endif %}
+            {% if grounding.parentEntity %}
+                <dt>{{ 'grounding.detail.parentEntity'|trans([], 'contao_default') }}</dt>
+                {% if grounding.parentEntityUrl starts with 'https://' or grounding.parentEntityUrl starts with 'http://' %}
+                    <dd><a href="{{ grounding.parentEntityUrl }}" rel="noopener">{{ grounding.parentEntity }}</a></dd>
+                {% else %}
+                    <dd>{{ grounding.parentEntity }}</dd>
+                {% endif %}
+            {% endif %}
+            {% if grounding.relationships %}
+                <dt>{{ 'grounding.detail.relationships'|trans([], 'contao_default') }}</dt>
+                {% for relationship in grounding.relationships %}
+                    {% if relationship.url starts with 'https://' or relationship.url starts with 'http://' %}
+                        <dd>{{ relationship.relation }}: <a href="{{ relationship.url }}" rel="noopener">{{ relationship.name }}</a></dd>
+                    {% else %}
+                        <dd>{{ relationship.relation }}: {{ relationship.name }}</dd>
+                    {% endif %}
+                {% endfor %}
             {% endif %}
             {% if grounding.dateModified %}
                 <dt>{{ 'grounding.detail.verified'|trans([], 'contao_default') }}</dt>
