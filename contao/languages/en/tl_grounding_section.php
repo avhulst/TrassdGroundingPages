@@ -13,6 +13,7 @@ $GLOBALS['TL_LANG']['tl_grounding_section']['definedTerms'] = ['Defined terms', 
 $GLOBALS['TL_LANG']['tl_grounding_section']['faqItems'] = ['FAQ', 'Rows of question and answer.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['sources'] = ['Sources', 'Rows of title and URL.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['identifiers'] = ['Identifiers', 'Rows of label and value (e.g. Wikidata, ROR).'];
+$GLOBALS['TL_LANG']['tl_grounding_section']['furtherReading'] = ['Further reading', 'Rows of title and URL (external deep dives, recommended in the lower page area).'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['published'] = ['Publish', 'Show this section in the front end.'];
 
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['fact-grid'] = 'Fact grid';
@@ -20,6 +21,7 @@ $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['timeline'] = 'Timeli
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['defined-terms'] = 'Defined terms';
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['faq'] = 'FAQ';
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['sources'] = 'Sources & identifiers';
+$GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['further-reading'] = 'Further reading';
 
 $GLOBALS['TL_LANG']['tl_grounding_section']['col_label'] = 'Label';
 $GLOBALS['TL_LANG']['tl_grounding_section']['col_value'] = 'Value';

@@ -140,6 +140,31 @@ class GroundingPageComposerTest extends ContaoTestCase
         $this->assertSame('ROR', $dto->sections[0]->identifiers[0]['label']);
     }
 
+    public function testFurtherReadingSectionPopulatesFurtherReadingOnly(): void
+    {
+        $section = $this->mockSection([
+            'sectionType' => 'further-reading',
+            'sectionTitle' => 'Weiterlesen',
+            'furtherReading' => serialize([
+                ['title' => ' CERN Annual Report ', 'url' => ' https://home.cern/resources/annual-report '],
+                ['title' => '', 'url' => ''],
+                ['title' => 'Nur Titel', 'url' => ''],
+            ]),
+            'sources' => serialize([['title' => 'x', 'url' => 'https://x/']]),
+        ]);
+
+        $dto = (new GroundingPageComposer())->compose($this->mockPage(['title' => 'X', 'entityType' => 'organization'], [$section]));
+
+        $this->assertSame(
+            [
+                ['title' => 'CERN Annual Report', 'url' => 'https://home.cern/resources/annual-report'],
+                ['title' => 'Nur Titel', 'url' => ''],
+            ],
+            $dto->sections[0]->furtherReading,
+        );
+        $this->assertSame([], $dto->sections[0]->sources);
+    }
+
     public function testComposesGovernanceFieldsAndDropsEmptyChangelogRows(): void
     {
         $dto = (new GroundingPageComposer())->compose($this->mockPage([

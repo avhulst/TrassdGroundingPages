@@ -10,10 +10,10 @@ use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 class GroundingSectionTypeTest extends TestCase
 {
-    public function testValuesAreExactlyTheFiveSectionTypes(): void
+    public function testValuesAreExactlyTheSixSectionTypes(): void
     {
         $this->assertSame(
-            ['fact-grid', 'timeline', 'defined-terms', 'faq', 'sources'],
+            ['fact-grid', 'timeline', 'defined-terms', 'faq', 'sources', 'further-reading'],
             GroundingSectionType::values(),
         );
     }
@@ -43,6 +43,7 @@ class GroundingSectionTypeTest extends TestCase
         $this->assertSame([SectionRowSchema::Timeline], GroundingSectionType::TIMELINE->fields());
         $this->assertSame([SectionRowSchema::DefinedTerms], GroundingSectionType::DEFINED_TERMS->fields());
         $this->assertSame([SectionRowSchema::Faq], GroundingSectionType::FAQ->fields());
+        $this->assertSame([SectionRowSchema::FurtherReading], GroundingSectionType::FURTHER_READING->fields());
     }
 
     public function testSourcesCarriesBothSourcesAndIdentifiers(): void

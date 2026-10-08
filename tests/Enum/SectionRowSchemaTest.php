@@ -37,6 +37,7 @@ class SectionRowSchemaTest extends TestCase
         yield 'faqItems' => [SectionRowSchema::Faq, ['question', 'answer']];
         yield 'sources' => [SectionRowSchema::Sources, ['title', 'url']];
         yield 'identifiers' => [SectionRowSchema::Identifiers, ['label', 'value']];
+        yield 'furtherReading' => [SectionRowSchema::FurtherReading, ['title', 'url']];
     }
 
     public function testEveryColumnPairHasTwoDistinctNonEmptyKeys(): void

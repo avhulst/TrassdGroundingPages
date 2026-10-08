@@ -57,6 +57,7 @@ final class GroundingPageComposer
             faq: $this->rows($section, $type, SectionRowSchema::Faq),
             sources: $this->rows($section, $type, SectionRowSchema::Sources),
             identifiers: $this->rows($section, $type, SectionRowSchema::Identifiers),
+            furtherReading: $this->rows($section, $type, SectionRowSchema::FurtherReading),
         );
     }
 

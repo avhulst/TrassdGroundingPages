@@ -21,7 +21,7 @@ class TlGroundingSectionDcaTest extends TestCase
         $this->assertSame(['sorting'], $dca['list']['sorting']['fields']);
     }
 
-    public function testSectionTypeIsSubmitOnChangeSelectorWithFiveOptions(): void
+    public function testSectionTypeIsSubmitOnChangeSelectorWithSixOptions(): void
     {
         $dca = $this->loadDca();
         $field = $dca['fields']['sectionType'];
@@ -29,7 +29,7 @@ class TlGroundingSectionDcaTest extends TestCase
         $this->assertSame('select', $field['inputType']);
         $this->assertTrue($field['eval']['submitOnChange']);
         $this->assertContains('sectionType', $dca['palettes']['__selector__']);
-        $this->assertSame(['fact-grid', 'timeline', 'defined-terms', 'faq', 'sources'], $field['options']);
+        $this->assertSame(['fact-grid', 'timeline', 'defined-terms', 'faq', 'sources', 'further-reading'], $field['options']);
     }
 
     /**
@@ -44,6 +44,7 @@ class TlGroundingSectionDcaTest extends TestCase
         yield 'defined-terms' => ['sectionType_defined-terms', 'definedTerms'];
         yield 'faq' => ['sectionType_faq', 'faqItems'];
         yield 'sources' => ['sectionType_sources', 'sources,identifiers'];
+        yield 'further-reading' => ['sectionType_further-reading', 'furtherReading'];
     }
 
     #[DataProvider('subpaletteProvider')]
@@ -66,6 +67,7 @@ class TlGroundingSectionDcaTest extends TestCase
         yield 'faqItems' => ['faqItems', 'question', 'answer'];
         yield 'sources' => ['sources', 'title', 'url'];
         yield 'identifiers' => ['identifiers', 'label', 'value'];
+        yield 'furtherReading' => ['furtherReading', 'title', 'url'];
     }
 
     #[DataProvider('rowWizardProvider')]

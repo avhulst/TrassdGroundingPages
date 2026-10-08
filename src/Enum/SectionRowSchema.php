@@ -21,6 +21,7 @@ enum SectionRowSchema: string
     case Faq = 'faqItems';
     case Sources = 'sources';
     case Identifiers = 'identifiers';
+    case FurtherReading = 'furtherReading';
 
     public function fieldName(): string
     {
@@ -37,7 +38,7 @@ enum SectionRowSchema: string
             self::Timeline => ['year', 'event'],
             self::DefinedTerms => ['term', 'definition'],
             self::Faq => ['question', 'answer'],
-            self::Sources => ['title', 'url'],
+            self::Sources, self::FurtherReading => ['title', 'url'],
         };
     }
 }
