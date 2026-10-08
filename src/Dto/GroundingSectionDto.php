@@ -17,6 +17,7 @@ final readonly class GroundingSectionDto
      * @param list<array<string, string>> $faq
      * @param list<array<string, string>> $sources
      * @param list<array<string, string>> $identifiers
+     * @param list<array<string, string>> $furtherReading
      */
     public function __construct(
         public string $sectionType,
@@ -27,6 +28,7 @@ final readonly class GroundingSectionDto
         public array $faq = [],
         public array $sources = [],
         public array $identifiers = [],
+        public array $furtherReading = [],
     ) {
     }
 }

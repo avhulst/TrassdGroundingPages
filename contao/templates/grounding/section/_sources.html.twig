@@ -13,7 +13,11 @@
     {% if section.sources %}
         <ul class="grounding-page__source-list">
             {% for source in section.sources %}
-                <li><a href="{{ source.url }}" rel="nofollow noopener">{{ source.title ?: source.url }}</a></li>
+                {% if source.url starts with 'https://' or source.url starts with 'http://' %}
+                    <li><a href="{{ source.url }}" rel="nofollow noopener">{{ source.title ?: source.url }}</a></li>
+                {% elseif source.title %}
+                    <li>{{ source.title }}</li>
+                {% endif %}
             {% endfor %}
         </ul>
     {% endif %}

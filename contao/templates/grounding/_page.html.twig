@@ -13,6 +13,8 @@
             {% include "@Contao/grounding/section/_faq.html.twig" with { section: section } only %}
         {% elseif section.sectionType == 'sources' %}
             {% include "@Contao/grounding/section/_sources.html.twig" with { section: section } only %}
+        {% elseif section.sectionType == 'further-reading' %}
+            {% include "@Contao/grounding/section/_further_reading.html.twig" with { section: section, name: grounding.name } only %}
         {% endif %}
     {% endfor %}
 

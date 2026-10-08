@@ -1,0 +1,15 @@
+<section class="grounding-page grounding-page__further-reading">
+    <h2>{{ section.sectionTitle ?: 'grounding.detail.furtherReading'|trans([name], 'contao_default') }}</h2>
+
+    {% if section.furtherReading %}
+        <ul class="grounding-page__further-reading-list">
+            {% for item in section.furtherReading %}
+                {% if item.url starts with 'https://' or item.url starts with 'http://' %}
+                    <li><a href="{{ item.url }}" rel="noopener">{{ item.title ?: item.url }}</a></li>
+                {% elseif item.title %}
+                    <li>{{ item.title }}</li>
+                {% endif %}
+            {% endfor %}
+        </ul>
+    {% endif %}
+</section>

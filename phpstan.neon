@@ -25,7 +25,5 @@ parameters:
 
         # Contao-Legacy-Muster in Tests: $GLOBALS-DCA-Arrays sind `mixed`, Legacy-Model-
         # Zugriffe und bewusst überspezifische Assertions. src/ bleibt unberührt streng (Level 6).
-        - { identifier: offsetAccess.notFound, path: tests/* }
-        - { identifier: method.impossibleType, path: tests/* }
         - { identifier: method.alreadyNarrowedType, path: tests/* }
         - { identifier: function.alreadyNarrowedType, path: tests/* }

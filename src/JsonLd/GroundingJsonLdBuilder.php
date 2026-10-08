@@ -56,6 +56,18 @@ final readonly class GroundingJsonLdBuilder
             $webPage->setProperty('maintainer', Schema::organization()->name($dto->maintainer));
         }
 
+        $citations = $this->buildCitations($dto);
+
+        if ([] !== $citations) {
+            $webPage->setProperty('citation', $citations);
+        }
+
+        $relatedLinks = $this->buildRelatedLinks($dto);
+
+        if ([] !== $relatedLinks) {
+            $webPage->setProperty('relatedLink', $relatedLinks);
+        }
+
         return $webPage;
     }
 
@@ -71,6 +83,16 @@ final readonly class GroundingJsonLdBuilder
 
         if ([] !== $sameAs) {
             $main->setProperty('sameAs', $sameAs);
+        }
+
+        $classification = ClassificationPropertyMap::resolve($dto->schemaType, $dto->isCustomSchemaType);
+
+        if ('' !== $dto->geographicScope && null !== $classification['geographicScope']) {
+            $main->setProperty($classification['geographicScope'], $dto->geographicScope);
+        }
+
+        if ('' !== $dto->parentEntity && null !== $classification['parentEntity']) {
+            $main->setProperty($classification['parentEntity'], $this->buildParentNode($dto, $classification['parentEntity']));
         }
 
         $additional = $this->buildAdditionalProperties($dto);
@@ -227,6 +249,24 @@ final readonly class GroundingJsonLdBuilder
             }
         }
 
+        if ('' !== $dto->segment) {
+            $props[] = ['@type' => 'PropertyValue', 'name' => 'category', 'value' => $dto->segment];
+        }
+
+        $classification = ClassificationPropertyMap::resolve($dto->schemaType, $dto->isCustomSchemaType);
+
+        if ('' !== $dto->geographicScope && null === $classification['geographicScope']) {
+            $props[] = ['@type' => 'PropertyValue', 'name' => 'geographicScope', 'value' => $dto->geographicScope];
+        }
+
+        if ('' !== $dto->parentEntity && null === $classification['parentEntity']) {
+            $props[] = $this->propertyValue('parentEntity', $dto->parentEntity, $dto->parentEntityUrl);
+        }
+
+        foreach ($dto->relationships as $relationship) {
+            $props[] = $this->propertyValue($relationship['relation'] ?? '', $relationship['name'] ?? '', $relationship['url'] ?? '');
+        }
+
         if ('' !== $dto->status) {
             $props[] = ['@type' => 'PropertyValue', 'name' => 'status', 'value' => $dto->status];
         }
@@ -236,6 +276,85 @@ final readonly class GroundingJsonLdBuilder
         }
 
         return $props;
+    }
+
+    private function buildParentNode(GroundingPageDto $dto, string $property): BaseType
+    {
+        $node = 'parentOrganization' === $property ? Schema::organization() : Schema::creativeWork();
+        $node->name($dto->parentEntity);
+
+        if ($this->isUrl($dto->parentEntityUrl)) {
+            $node->url($dto->parentEntityUrl);
+        }
+
+        return $node;
+    }
+
+    /**
+     * @return array<string, string>
+     */
+    private function propertyValue(string $name, string $value, string $url): array
+    {
+        $prop = ['@type' => 'PropertyValue', 'name' => $name, 'value' => $value];
+
+        if ($this->isUrl($url)) {
+            $prop['url'] = $url;
+        }
+
+        return $prop;
+    }
+
+    /**
+     * Quellen → citation. Ohne Titel dient die URL als Name; nicht-http(s)-URLs
+     * werden nie als url ausgegeben.
+     *
+     * @return list<BaseType>
+     */
+    private function buildCitations(GroundingPageDto $dto): array
+    {
+        $citations = [];
+        [$titleKey, $urlKey] = SectionRowSchema::Sources->columns();
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->sources) as $source) {
+            $title = $source[$titleKey] ?? '';
+            $url = $source[$urlKey] ?? '';
+            $hasUrl = $this->isUrl($url);
+
+            if ('' === $title && !$hasUrl) {
+                continue;
+            }
+
+            $work = Schema::creativeWork()->name('' !== $title ? $title : $url);
+
+            if ($hasUrl) {
+                $work->url($url);
+            }
+
+            $citations[] = $work;
+        }
+
+        return $citations;
+    }
+
+    /**
+     * Further Reading → relatedLink (schema.org erwartet URL-Strings).
+     *
+     * @return list<string>
+     */
+    private function buildRelatedLinks(GroundingPageDto $dto): array
+    {
+        $links = [];
+        [, $urlKey] = SectionRowSchema::FurtherReading->columns();
+
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->furtherReading) as $row) {
+            $url = $row[$urlKey] ?? '';
+
+            if ($this->isUrl($url)) {
+                $links[] = $url;
+            }
+        }
+
+        return array_values(array_unique($links));
     }
 
     /**

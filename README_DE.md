@@ -1,6 +1,6 @@
 # Contao Grounding Pages (`trassd/contao-grounding-pages`)
 
-Integriert **Grounding Pages** nach dem *Grounding Page Standard v1.6*
+Integriert **Grounding Pages** nach dem *Grounding Page Standard v1.6.1*
 (<https://groundingpage.com/>) in Contao. Eine Grounding Page ist ein faktischer, klar
 strukturierter Wissenseintrag pro Entität — geschrieben für **Menschen und KI-/Antwortmaschinen**
 (GEO/AEO). Das Bundle liefert dafür ein Backend-Modell, ein Frontend-Element und **genau ein**
@@ -12,7 +12,7 @@ standardkonformes JSON-LD-Dokument pro Seite.
   sortierbare Kindtabelle mit den inhaltlichen Abschnitten.
 - **Eingebettet in die Seite.** Die komplette Grounding Page wird als **Content-Element** in einem
   Artikel platziert und rendert im normalen Seiten-Layout (Header, Footer, Theme).
-- **Volle v1.6-Ontologie** (18 Entitätsklassen, abgebildet auf schema.org, Fallback `Thing`),
+- **Volle v1.6.1-Ontologie** (18 Entitätsklassen, abgebildet auf schema.org, Fallback `Thing`),
   erweiterbar über ein Freitextfeld für beliebige `@type`-Werte.
 
 ## Anforderungen
@@ -34,7 +34,8 @@ vendor/bin/contao-console cache:clear
 Unter **Inhalte → Grounding Pages** eine Entität anlegen:
 
 - **Entität:** Name, Alias, Sprache, Entitätstyp, optionaler eigener schema.org-Typ.
-- **Definition & Abgrenzung:** kanonische Definition, Segment, „Nicht zu verwechseln mit …",
+- **Definition & Abgrenzung:** kanonische Definition, Segment, Klassifikation (geografischer
+  Bereich, übergeordnete Entität mit URL, wichtige Beziehungen), „Nicht zu verwechseln mit …",
   externe Identitäts-URLs (`sameAs`, z. B. Wikidata/Wikipedia/LinkedIn).
 - **Governance:** Herausgeber, Verantwortlich, Status, Version, Veröffentlichungsdatum, zuletzt
   geprüft, Änderungsprotokoll und ein Korrektur-/Kontaktpfad.
@@ -49,6 +50,11 @@ schaltet die passenden Eingabefelder frei:
 | Begriffe        | Begriff · Definition                                |
 | Häufige Fragen  | Frage · Antwort                                     |
 | Quellen         | Titel · URL (+ Identifikatoren: Bezeichnung · Wert) |
+| Weiterführende Literatur | Titel · URL                                |
+
+Die Reihenfolge der Abschnitte ist frei (Standard v1.6.1: empfohlen, nicht verpflichtend).
+„Weiterführende Literatur" gehört in den unteren Seitenbereich und darf vor oder nach FAQ und
+Quellen stehen. Klassifikationsangaben erscheinen kompakt im Seitenkopf, nicht als eigener Abschnitt.
 
 Der Seitenkopf (Name, Definition, Abgrenzung, Governance) wird immer aus den Kopfdaten gerendert —
 er ist kein eigener Abschnitt.
@@ -74,7 +80,10 @@ bestimmt `inLanguage`; die `hreflang`-Verknüpfung liefert Contao über die Spra
 
 Pro Seite entsteht **ein** Graph mit einer `WebPage`, deren `mainEntity` die aufgelöste Haupt-Entität
 ist (z. B. `Organization`, `Person`, `Product`). `sameAs`, Fakten (`additionalProperty`), `DefinedTerm`-
-und `FAQPage`-Knoten werden aus den Abschnitten erzeugt. Die Ausgabe erfolgt über Contaos
+und `FAQPage`-Knoten werden aus den Abschnitten erzeugt. Quellen erscheinen als `citation`, weiterführende
+Literatur als `relatedLink` an der `WebPage`. Die Klassifikation wird typgerecht gespiegelt
+(`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), sonst als `PropertyValue`. Segment
+und Beziehungen stehen als `PropertyValue` in `additionalProperty`. Die Ausgabe erfolgt über Contaos
 ResponseContext, sodass das `<script type="application/ld+json">` im `<head>` steht — auch wenn das
 Element mitten im Seiteninhalt platziert ist. Prüfbar mit dem Schema.org Validiator.
 

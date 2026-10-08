@@ -13,6 +13,7 @@ $GLOBALS['TL_LANG']['tl_grounding_section']['definedTerms'] = ['Begriffe', 'Zeil
 $GLOBALS['TL_LANG']['tl_grounding_section']['faqItems'] = ['Häufige Fragen', 'Zeilen aus Frage und Antwort.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['sources'] = ['Quellen', 'Zeilen aus Titel und URL.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['identifiers'] = ['Identifikatoren', 'Zeilen aus Bezeichnung und Wert (z. B. Wikidata, ROR).'];
+$GLOBALS['TL_LANG']['tl_grounding_section']['furtherReading'] = ['Weiterführende Literatur', 'Zeilen aus Titel und URL (externe Vertiefung, im unteren Seitenbereich empfohlen).'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['published'] = ['Veröffentlichen', 'Diesen Abschnitt im Frontend anzeigen.'];
 
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['fact-grid'] = 'Faktentabelle';
@@ -20,6 +21,7 @@ $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['timeline'] = 'Zeitle
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['defined-terms'] = 'Begriffe';
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['faq'] = 'Häufige Fragen';
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['sources'] = 'Quellen & Identifikatoren';
+$GLOBALS['TL_LANG']['tl_grounding_section']['sectionType']['further-reading'] = 'Weiterführende Literatur';
 
 $GLOBALS['TL_LANG']['tl_grounding_section']['col_label'] = 'Bezeichnung';
 $GLOBALS['TL_LANG']['tl_grounding_section']['col_value'] = 'Wert';

@@ -11,6 +11,7 @@ enum GroundingSectionType: string
     case DEFINED_TERMS = 'defined-terms';
     case FAQ = 'faq';
     case SOURCES = 'sources';
+    case FURTHER_READING = 'further-reading';
 
     public static function fromStringOrFallback(string $value): self
     {
@@ -31,6 +32,7 @@ enum GroundingSectionType: string
             self::DEFINED_TERMS => [SectionRowSchema::DefinedTerms],
             self::FAQ => [SectionRowSchema::Faq],
             self::SOURCES => [SectionRowSchema::Sources, SectionRowSchema::Identifiers],
+            self::FURTHER_READING => [SectionRowSchema::FurtherReading],
         };
     }
 
