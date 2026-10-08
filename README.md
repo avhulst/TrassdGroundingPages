@@ -8,6 +8,9 @@ knowledge entry per entity — written for **humans and AI/answer engines** (GEO
 provides a back end data model, a front end element and **exactly one** standard-compliant JSON-LD
 document per page.
 
+Background and walkthrough (German blog post):
+[Grounding Pages in Contao](https://vanhulst.de/blog/grounding-pages-contao).
+
 ## Concept
 
 - **One record = one entity.** A parent table holding the entity's governance data and a sortable
@@ -117,6 +120,12 @@ composer all   # Rector (dry-run) → ECS → PHPStan → depcheck → PHPUnit
 
 Individually: `composer ecs` (auto-fix), `composer phpstan`, `composer rector`, `composer depcheck`,
 `composer tests`.
+
+## How this bundle was made
+
+This bundle was planned and built with AI assistance (Claude by Anthropic): specification,
+implementation, tests and documentation were created in collaboration with Claude and reviewed
+by a human.
 
 ## License
 

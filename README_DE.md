@@ -6,6 +6,9 @@ strukturierter Wissenseintrag pro Entität — geschrieben für **Menschen und K
 (GEO/AEO). Das Bundle liefert dafür ein Backend-Modell, ein Frontend-Element und **genau ein**
 standardkonformes JSON-LD-Dokument pro Seite.
 
+Hintergründe und Praxis im Blogbeitrag:
+[Grounding Pages in Contao](https://vanhulst.de/blog/grounding-pages-contao).
+
 ## Konzept
 
 - **Ein Datensatz = eine Entität.** Eine Kopftabelle mit den Governance-Daten der Entität und eine
@@ -114,6 +117,12 @@ composer all   # Rector (dry-run) → ECS → PHPStan → depcheck → PHPUnit
 
 Einzeln: `composer ecs` (Auto-Fix), `composer phpstan`, `composer rector`, `composer depcheck`,
 `composer tests`.
+
+## Entstehung
+
+Dieses Bundle wurde mit KI-Unterstützung (Claude von Anthropic) geplant und erstellt:
+Spezifikation, Implementierung, Tests und Dokumentation entstanden in Zusammenarbeit mit Claude
+und wurden von einem Menschen geprüft.
 
 ## Lizenz
 
