@@ -48,6 +48,6 @@ final readonly class GroundingPageDto
      */
     public function isReviewed(): bool
     {
-        return '' !== $this->reviewerName && null !== $this->lastReviewed;
+        return '' !== $this->reviewerName && null !== $this->lastReviewed && '' !== $this->lastReviewed;
     }
 }

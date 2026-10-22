@@ -11,14 +11,14 @@
     ],
     "require": {
         "php": "^8.3",
+        "ext-ctype": "*",
         "contao/core-bundle": "^5.7",
         "spatie/schema-org": "^3.10 || ^4.0",
         "symfony/dependency-injection": "^7.4",
         "symfony/http-foundation": "^7.4",
         "symfony/http-kernel": "^7.4",
-        "twig/twig": "^3.0",
         "symfony/translation-contracts": "^3.0",
-        "ext-ctype": "*"
+        "twig/twig": "^3.0"
     },
     "require-dev": {
         "contao/contao-rector": "dev-main",

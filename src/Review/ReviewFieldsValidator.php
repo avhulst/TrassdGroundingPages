@@ -16,8 +16,10 @@ final class ReviewFieldsValidator
     public const string ERROR_FUTURE = 'reviewInFuture';
 
     /**
-     * @param string $date Timestamp, formatierter POST-Wert oder ''. Die
-     *                     Zukunftsprüfung greift nur bei Timestamps.
+     * @param string $date Timestamp, formatierter POST-Wert oder ''. Das Geschwisterfeld
+     *                     kommt als formatierter POST-String an, daher ein String; die
+     *                     Zukunftsprüfung greift nur bei Timestamps und wird im Callback
+     *                     des Datumsfelds selbst erzwungen.
      */
     public function validate(string $name, string $date, int $now): string|null
     {

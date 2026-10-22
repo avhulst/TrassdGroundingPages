@@ -57,7 +57,10 @@ class GroundingDtoTest extends TestCase
         $nameOnly = new GroundingPageDto(name: 'X', schemaType: 'Thing', reviewerName: 'Jane Doe');
         $dateOnly = new GroundingPageDto(name: 'X', schemaType: 'Thing', lastReviewed: '2026-10-02');
 
+        $emptyDate = new GroundingPageDto(name: 'X', schemaType: 'Thing', reviewerName: 'Jane Doe', lastReviewed: '');
+
         $this->assertTrue($reviewed->isReviewed());
+        $this->assertFalse($emptyDate->isReviewed());
         $this->assertFalse($nameOnly->isReviewed());
         $this->assertFalse($dateOnly->isReviewed());
     }
