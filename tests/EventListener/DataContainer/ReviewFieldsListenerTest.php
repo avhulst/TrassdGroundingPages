@@ -101,9 +101,12 @@ class ReviewFieldsListenerTest extends ContaoTestCase
      */
     private function dc(int $id = 1, array $stored = ['reviewerName' => '', 'lastReviewed' => null]): DC_Table
     {
-        return $this->mockClassWithProperties(DC_Table::class, [
-            'id' => $id,
-            'activeRecord' => (object) $stored,
-        ]);
+        $dc = $this->mockClassWithProperties(DC_Table::class, ['id' => $id]);
+        $dc
+            ->method('getCurrentRecord')
+            ->willReturn($stored)
+        ;
+
+        return $dc;
     }
 }

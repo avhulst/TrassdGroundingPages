@@ -59,9 +59,8 @@ final readonly class ReviewFieldsListener
             }
         }
 
-        // activeRecord ist nur über __get() deklariert, nicht als @property.
-        $record = $dc->__get('activeRecord');
+        $record = $dc->getCurrentRecord();
 
-        return \is_object($record) ? trim((string) ($record->{$field} ?? '')) : '';
+        return trim((string) ($record[$field] ?? ''));
     }
 }
