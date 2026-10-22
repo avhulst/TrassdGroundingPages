@@ -45,6 +45,21 @@ class GroundingDtoTest extends TestCase
         $this->assertSame([], $dto->sections);
         $this->assertNull($dto->datePublished);
         $this->assertNull($dto->dateModified);
+        $this->assertSame('person', $dto->reviewerType);
+        $this->assertSame('', $dto->reviewerName);
+        $this->assertNull($dto->lastReviewed);
+        $this->assertFalse($dto->isReviewed());
+    }
+
+    public function testPageIsReviewedOnlyWithNameAndDate(): void
+    {
+        $reviewed = new GroundingPageDto(name: 'X', schemaType: 'Thing', reviewerName: 'Jane Doe', lastReviewed: '2026-10-02');
+        $nameOnly = new GroundingPageDto(name: 'X', schemaType: 'Thing', reviewerName: 'Jane Doe');
+        $dateOnly = new GroundingPageDto(name: 'X', schemaType: 'Thing', lastReviewed: '2026-10-02');
+
+        $this->assertTrue($reviewed->isReviewed());
+        $this->assertFalse($nameOnly->isReviewed());
+        $this->assertFalse($dateOnly->isReviewed());
     }
 
     public function testPageDtoAggregatesSections(): void
