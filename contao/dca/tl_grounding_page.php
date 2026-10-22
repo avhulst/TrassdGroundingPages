@@ -192,12 +192,12 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
         ],
         'reviewerName' => [
             'inputType' => 'text',
-            'eval' => ['maxlength' => 255, 'tl_class' => 'w50 clr'],
+            'eval' => ['maxlength' => 255, 'doNotCopy' => true, 'tl_class' => 'w50 clr'],
             'sql' => "varchar(255) NOT NULL default ''",
         ],
         'lastReviewed' => [
             'inputType' => 'text',
-            'eval' => ['rgxp' => 'date', 'datepicker' => true, 'tl_class' => 'w50 wizard'],
+            'eval' => ['rgxp' => 'date', 'datepicker' => true, 'doNotCopy' => true, 'tl_class' => 'w50 wizard'],
             'sql' => 'int(10) unsigned NULL',
         ],
         'published' => [

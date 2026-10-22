@@ -146,6 +146,15 @@ class TlGroundingPageDcaTest extends TestCase
         $this->assertSame('int(10) unsigned NULL', $dca['fields']['lastReviewed']['sql']);
     }
 
+    public function testReviewFieldsAreNotCopiedButReviewerTypeIs(): void
+    {
+        $fields = $this->loadDca()['fields'];
+
+        $this->assertTrue($fields['reviewerName']['eval']['doNotCopy']);
+        $this->assertTrue($fields['lastReviewed']['eval']['doNotCopy']);
+        $this->assertArrayNotHasKey('doNotCopy', $fields['reviewerType']['eval']);
+    }
+
     /**
      * @return array<string, mixed>
      */
