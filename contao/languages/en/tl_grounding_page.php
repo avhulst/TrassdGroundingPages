@@ -60,3 +60,5 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['place'] = 'Place';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['event'] = 'Event';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['metric'] = 'Metric';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['project'] = 'Project';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewIncomplete'] = 'Please enter both reviewer and review date, or leave both empty.';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewInFuture'] = 'The review date must not be in the future.';

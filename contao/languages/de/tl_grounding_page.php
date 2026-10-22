@@ -60,3 +60,5 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['place'] = 'Ort';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['event'] = 'Veranstaltung';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['metric'] = 'Kennzahl';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['project'] = 'Projekt';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewIncomplete'] = 'Bitte Reviewer und Review-Datum gemeinsam angeben oder beide leer lassen.';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewInFuture'] = 'Das Review-Datum darf nicht in der Zukunft liegen.';
