@@ -81,6 +81,16 @@ placeholder.
 - “Last updated” (formerly “Last verified”) is the date of the last content change and is emitted as
   `dateModified`. It is not a review date and is never converted into one.
 
+**Upgrade notes (Standard v1.7)**
+
+- Projects that override `grounding/_standard_footer.html.twig` or `grounding/_page.html.twig` must
+  include `@Contao/grounding/_review_notice.html.twig` and call
+  `grounding_standard(grounding.isReviewed)`. Otherwise the notice is missing and the footer shows
+  v1.6.1 while the JSON-LD already carries the review.
+- `GroundingStandard::VERSION` was removed. Use `GroundingStandard::BASE_VERSION`,
+  `REVIEWED_VERSION` or `versionFor(bool)`. The language key
+  `grounding.detail.standardTextVerified` is deprecated (alias of `standardTextUpdated`).
+
 The page header (name, definition, distinction, governance) is always rendered from the entity's
 main data — it is not a separate section.
 
@@ -107,11 +117,14 @@ language trees automatically.
 Each page produces **one** graph containing a `WebPage` whose `mainEntity` is the resolved main
 entity (e.g. `Organization`, `Person`, `Product`). `sameAs`, facts (`additionalProperty`),
 `DefinedTerm` and `FAQPage` nodes are generated from the sections. Sources appear as `citation` and
-further reading as `relatedLink` on the `WebPage`. A reviewed page also carries `reviewedBy` (`Person` or `Organization`) and `lastReviewed`. `datePublished` mirrors the publication date next to `dateCreated`. Classification is mirrored with type-appropriate
-properties (`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), otherwise as
-`PropertyValue`. Segment and relationships are `PropertyValue` entries in `additionalProperty`. Output runs through Contao's
-response context, so the `<script type="application/ld+json">` ends up in the `<head>` — even when
-the element sits in the middle of the page content. Verifiable with the Schema.org validator.
+further reading as `relatedLink` on the `WebPage`. A reviewed page also carries `reviewedBy`
+(`Person` or `Organization`) and `lastReviewed`. `datePublished` mirrors the publication date next
+to `dateCreated`. Classification is mirrored with type-appropriate properties
+(`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), otherwise as `PropertyValue`.
+Segment and relationships are `PropertyValue` entries in `additionalProperty`. Output runs through
+Contao's response context, so the `<script type="application/ld+json">` ends up in the `<head>` —
+even when the element sits in the middle of the page content. Verifiable with the Schema.org
+validator.
 
 ## Extensibility
 

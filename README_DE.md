@@ -79,6 +79,16 @@ v1.6.1-Seite, ohne Hinweis und ohne Platzhalter.
 - „Zuletzt aktualisiert“ (früher „Zuletzt geprüft“) ist das Datum der letzten inhaltlichen Änderung
   und wird als `dateModified` ausgegeben. Es ist kein Review-Datum und wird nie in eines umgewandelt.
 
+**Hinweise zum Upgrade (Standard v1.7)**
+
+- Projekte, die `grounding/_standard_footer.html.twig` oder `grounding/_page.html.twig`
+  überschreiben, müssen `@Contao/grounding/_review_notice.html.twig` einbinden und
+  `grounding_standard(grounding.isReviewed)` aufrufen. Sonst fehlt der Hinweis, und der Footer nennt
+  v1.6.1, während das JSON-LD bereits das Review trägt.
+- `GroundingStandard::VERSION` wurde entfernt. Stattdessen `GroundingStandard::BASE_VERSION`,
+  `REVIEWED_VERSION` oder `versionFor(bool)` verwenden. Der Sprachschlüssel
+  `grounding.detail.standardTextVerified` ist veraltet (Alias von `standardTextUpdated`).
+
 Der Seitenkopf (Name, Definition, Abgrenzung, Governance) wird immer aus den Kopfdaten gerendert —
 er ist kein eigener Abschnitt.
 
@@ -104,7 +114,9 @@ bestimmt `inLanguage`; die `hreflang`-Verknüpfung liefert Contao über die Spra
 Pro Seite entsteht **ein** Graph mit einer `WebPage`, deren `mainEntity` die aufgelöste Haupt-Entität
 ist (z. B. `Organization`, `Person`, `Product`). `sameAs`, Fakten (`additionalProperty`), `DefinedTerm`-
 und `FAQPage`-Knoten werden aus den Abschnitten erzeugt. Quellen erscheinen als `citation`, weiterführende
-Literatur als `relatedLink` an der `WebPage`. Eine geprüfte Seite trägt zusätzlich `reviewedBy` (`Person` oder `Organization`) und `lastReviewed`. `datePublished` spiegelt das Veröffentlichungsdatum neben `dateCreated`. Die Klassifikation wird typgerecht gespiegelt
+Literatur als `relatedLink` an der `WebPage`. Eine geprüfte Seite trägt zusätzlich
+`reviewedBy` (`Person` oder `Organization`) und `lastReviewed`. `datePublished` spiegelt das
+Veröffentlichungsdatum neben `dateCreated`. Die Klassifikation wird typgerecht gespiegelt
 (`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), sonst als `PropertyValue`. Segment
 und Beziehungen stehen als `PropertyValue` in `additionalProperty`. Die Ausgabe erfolgt über Contaos
 ResponseContext, sodass das `<script type="application/ld+json">` im `<head>` steht — auch wenn das
