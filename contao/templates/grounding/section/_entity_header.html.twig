@@ -57,13 +57,18 @@
             {% endif %}
             {% if grounding.relationships %}
                 <dt>{{ 'grounding.detail.relationships'|trans([], 'contao_default') }}</dt>
-                {% for relationship in grounding.relationships %}
-                    {% if relationship.url starts with 'https://' or relationship.url starts with 'http://' %}
-                        <dd>{{ relationship.relation }}: <a href="{{ relationship.url }}" rel="noopener">{{ relationship.name }}</a></dd>
-                    {% else %}
-                        <dd>{{ relationship.relation }}: {{ relationship.name }}</dd>
-                    {% endif %}
-                {% endfor %}
+                {# Genau ein <dd> pro <dt>, sonst verrutscht das zweispaltige Raster. #}
+                <dd>
+                    <ul class="grounding-page__relationships">
+                        {% for relationship in grounding.relationships %}
+                            {% if relationship.url starts with 'https://' or relationship.url starts with 'http://' %}
+                                <li>{{ relationship.relation }}: <a href="{{ relationship.url }}" rel="noopener">{{ relationship.name }}</a></li>
+                            {% else %}
+                                <li>{{ relationship.relation }}: {{ relationship.name }}</li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </dd>
             {% endif %}
             {% if grounding.dateModified %}
                 <dt>{{ 'grounding.detail.verified'|trans([], 'contao_default') }}</dt>
