@@ -251,6 +251,50 @@ class GroundingPageComposerTest extends ContaoTestCase
         $this->assertTrue($dto->isCustomSchemaType);
     }
 
+    public function testComposesReviewFields(): void
+    {
+        $reviewed = 1_790_942_400; // 2026-10-02 12:00 UTC
+
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'X',
+            'entityType' => 'organization',
+            'reviewerType' => 'organization',
+            'reviewerName' => '  Redaktion  ',
+            'lastReviewed' => $reviewed,
+        ]));
+
+        $this->assertSame('organization', $dto->reviewerType);
+        $this->assertSame('Redaktion', $dto->reviewerName);
+        $this->assertSame(date('Y-m-d', $reviewed), $dto->lastReviewed);
+        $this->assertTrue($dto->isReviewed());
+    }
+
+    public function testUnknownReviewerTypeFallsBackToPerson(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'X',
+            'entityType' => 'organization',
+            'reviewerType' => 'team',
+        ]));
+
+        $this->assertSame('person', $dto->reviewerType);
+    }
+
+    public function testDateVerifiedNeverBecomesReviewDate(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'X',
+            'entityType' => 'organization',
+            'dateVerified' => 1_790_942_400,
+            'reviewerName' => 'Jane Doe',
+            'lastReviewed' => 0,
+        ]));
+
+        $this->assertSame(date('Y-m-d', 1_790_942_400), $dto->dateModified);
+        $this->assertNull($dto->lastReviewed);
+        $this->assertFalse($dto->isReviewed());
+    }
+
     /**
      * @param array<string, mixed>        $properties
      * @param list<GroundingSectionModel> $sections

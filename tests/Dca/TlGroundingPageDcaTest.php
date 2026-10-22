@@ -50,6 +50,7 @@ class TlGroundingPageDcaTest extends TestCase
             'segment', 'distinction', 'sameAs', 'publisher', 'maintainer', 'status',
             'entryVersion', 'datePublished', 'dateVerified', 'changelog', 'correctionContact', 'published',
             'geographicScope', 'parentEntity', 'parentEntityUrl', 'relationships', 'hideHumanNotice',
+            'reviewerType', 'reviewerName', 'lastReviewed',
         ] as $field) {
             yield $field => [$field];
         }
@@ -114,6 +115,35 @@ class TlGroundingPageDcaTest extends TestCase
         $this->assertSame('rowWizard', $field['inputType']);
         $this->assertSame(['relation', 'name', 'url'], array_keys($field['fields']));
         $this->assertSame('blob', $field['sql']['type']);
+    }
+
+    public function testReviewLegendFollowsGovernanceAndPrecedesPublish(): void
+    {
+        $this->assertStringContainsString(
+            'hideHumanNotice;{review_legend},reviewerType,reviewerName,lastReviewed;{publish_legend},published',
+            $this->loadDca()['palettes']['default'],
+        );
+    }
+
+    public function testReviewerTypeIsSelectWithoutBlankDefaultingToPerson(): void
+    {
+        $field = $this->loadDca()['fields']['reviewerType'];
+
+        $this->assertSame('select', $field['inputType']);
+        $this->assertSame(['person', 'organization'], $field['options']);
+        $this->assertArrayNotHasKey('includeBlankOption', $field['eval']);
+        $this->assertSame("varchar(16) NOT NULL default 'person'", $field['sql']);
+    }
+
+    public function testReviewerNameAndLastReviewedDefinitions(): void
+    {
+        $dca = $this->loadDca();
+
+        $this->assertSame("varchar(255) NOT NULL default ''", $dca['fields']['reviewerName']['sql']);
+        $this->assertSame(255, $dca['fields']['reviewerName']['eval']['maxlength']);
+        $this->assertSame('date', $dca['fields']['lastReviewed']['eval']['rgxp']);
+        $this->assertTrue($dca['fields']['lastReviewed']['eval']['datepicker']);
+        $this->assertSame('int(10) unsigned NULL', $dca['fields']['lastReviewed']['sql']);
     }
 
     /**
