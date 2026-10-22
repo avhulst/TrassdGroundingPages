@@ -1,0 +1,5 @@
+{# Standard v1.7: Reviewer und Datum identisch zu reviewedBy/lastReviewed im JSON-LD. Ohne Review kein Markup. #}
+{% if grounding.isReviewed %}
+    {%- set date = '<time datetime="' ~ grounding.lastReviewed|e ~ '">' ~ grounding.lastReviewed|e ~ '</time>' -%}
+    <p class="grounding-page__review-notice">{{ 'grounding.review.notice'|trans([grounding.reviewerName|e, date], 'contao_default')|raw }}</p>
+{% endif %}

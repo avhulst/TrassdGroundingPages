@@ -38,6 +38,8 @@ class FrontendTextTest extends TestCase
             $GLOBALS['TL_LANG']['grounding']['detail']['standardTextVerified'],
         );
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['furtherReading']);
+        $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['review']['notice']);
+        $this->assertStringContainsString('%2$s', $GLOBALS['TL_LANG']['grounding']['review']['notice']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['grounding']['humanNotice']['label']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['CTE']['grounding_page'][0]);
     }

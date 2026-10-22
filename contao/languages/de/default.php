@@ -33,6 +33,8 @@ $GLOBALS['TL_LANG']['grounding']['humanNotice']['introLinkText'] = 'Zur Startsei
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['aboutLabel'] = 'Was Grounding Pages sind:';
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['aboutLinkText'] = 'Grounding Page Project';
 
+$GLOBALS['TL_LANG']['grounding']['review']['notice'] = 'Fakten geprüft von %1$s · Zuletzt von einem Menschen geprüft: %2$s';
+
 $GLOBALS['TL_LANG']['grounding']['entityType']['organization'] = 'Organisation';
 $GLOBALS['TL_LANG']['grounding']['entityType']['person'] = 'Person';
 $GLOBALS['TL_LANG']['grounding']['entityType']['group-or-role'] = 'Gruppe oder Rolle';

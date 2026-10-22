@@ -41,6 +41,8 @@
         </section>
     {% endif %}
 
+    {% include "@Contao/grounding/_review_notice.html.twig" with { grounding: grounding } only %}
+
     <p class="grounding-page__standard-text">
         {%- set standard = grounding_standard(grounding.isReviewed) -%}
         {%- set link = '<a href="' ~ standard.specUrl|e ~ '" rel="noopener" target="_blank">'
