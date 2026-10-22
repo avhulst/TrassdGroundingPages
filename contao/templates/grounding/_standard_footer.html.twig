@@ -42,12 +42,12 @@
     {% endif %}
 
     <p class="grounding-page__standard-text">
-        {%- set standard = grounding_standard() -%}
+        {%- set standard = grounding_standard(grounding.isReviewed) -%}
         {%- set link = '<a href="' ~ standard.specUrl|e ~ '" rel="noopener" target="_blank">'
             ~ ('grounding.detail.standardLinkText'|trans([standard.version], 'contao_default'))
             ~ '</a>' -%}
         {% if grounding.dateModified %}
-            {{ 'grounding.detail.standardTextVerified'|trans([link, standard.version, grounding.dateModified], 'contao_default')|raw }}
+            {{ 'grounding.detail.standardTextUpdated'|trans([link, standard.version, grounding.dateModified], 'contao_default')|raw }}
         {% else %}
             {{ 'grounding.detail.standardText'|trans([link, standard.version], 'contao_default')|raw }}
         {% endif %}

@@ -20,5 +20,6 @@ class GroundingStandardExtensionTest extends TestCase
 
         $this->assertArrayHasKey('grounding_standard', $functions);
         $this->assertSame(GroundingStandard::templateData(), ($functions['grounding_standard'])());
+        $this->assertSame('1.7', ($functions['grounding_standard'])(true)['version']);
     }
 }

@@ -31,6 +31,12 @@ class FrontendTextTest extends TestCase
         // %name%-Platzhalter.
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment']);
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['standardText']);
+        $this->assertStringContainsString('%3$s', $GLOBALS['TL_LANG']['grounding']['detail']['standardTextUpdated']);
+        // Alter Schlüssel bleibt für überschriebene Templates bestehen, mit neuem Sinn.
+        $this->assertSame(
+            $GLOBALS['TL_LANG']['grounding']['detail']['standardTextUpdated'],
+            $GLOBALS['TL_LANG']['grounding']['detail']['standardTextVerified'],
+        );
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['furtherReading']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['grounding']['humanNotice']['label']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['CTE']['grounding_page'][0]);
