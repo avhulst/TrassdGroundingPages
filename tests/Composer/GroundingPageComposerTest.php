@@ -269,6 +269,17 @@ class GroundingPageComposerTest extends ContaoTestCase
         $this->assertTrue($dto->isReviewed());
     }
 
+    public function testReviewerNameIsDecodedFromInputEncoding(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'X',
+            'entityType' => 'organization',
+            'reviewerName' => 'O&#39;Brien &#40;CMS&#41;',
+        ]));
+
+        $this->assertSame("O'Brien (CMS)", $dto->reviewerName);
+    }
+
     public function testUnknownReviewerTypeFallsBackToPerson(): void
     {
         $dto = (new GroundingPageComposer())->compose($this->mockPage([

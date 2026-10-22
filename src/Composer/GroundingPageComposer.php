@@ -49,7 +49,9 @@ final class GroundingPageComposer
             isCustomSchemaType: '' !== trim((string) $page->customSchemaType),
             showHumanNotice: '1' !== (string) $page->hideHumanNotice,
             reviewerType: ReviewerType::fromStringOrFallback((string) $page->reviewerType)->value,
-            reviewerName: trim((string) $page->reviewerName),
+            // Contao kodiert Texteingaben beim Speichern; Markup und JSON-LD brauchen
+            // den Klartext.
+            reviewerName: StringUtil::revertInputEncoding(trim((string) $page->reviewerName)),
             lastReviewed: $this->formatDate($page->lastReviewed),
         );
     }

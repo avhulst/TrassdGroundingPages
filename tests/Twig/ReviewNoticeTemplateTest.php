@@ -37,6 +37,19 @@ class ReviewNoticeTemplateTest extends TwigTemplateTestCase
         $this->assertStringNotContainsString('<b>', $html);
     }
 
+    public function testPlainApostropheInReviewerNameIsEscapedOnce(): void
+    {
+        $html = $this->notice(new GroundingPageDto(
+            name: 'X',
+            schemaType: 'Thing',
+            reviewerName: "O'Brien (CMS)",
+            lastReviewed: '2026-10-02',
+        ));
+
+        $this->assertMatchesRegularExpression('/O(&#0?39;|&apos;|\')Brien/', $html);
+        $this->assertStringNotContainsString('&amp;#', $html);
+    }
+
     public function testUnreviewedPageRendersNothing(): void
     {
         $this->assertSame('', trim($this->notice(new GroundingPageDto(name: 'X', schemaType: 'Thing', reviewerName: 'Jane Doe'))));
