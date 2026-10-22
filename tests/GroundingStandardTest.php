@@ -10,17 +10,28 @@ use Trassd\Contao\GroundingPages\GroundingStandard;
 
 class GroundingStandardTest extends TestCase
 {
-    public function testVersionIsCurrentStandard(): void
+    public function testVersionsMatchStandard(): void
     {
-        $this->assertSame('1.6.1', GroundingStandard::VERSION);
+        $this->assertSame('1.6.1', GroundingStandard::BASE_VERSION);
+        $this->assertSame('1.7', GroundingStandard::REVIEWED_VERSION);
         $this->assertSame('https://groundingpage.com/spec/', GroundingStandard::SPEC_URL);
     }
 
-    public function testTemplateDataCarriesVersionAndSpecUrl(): void
+    public function testVersionDependsOnReview(): void
+    {
+        $this->assertSame('1.6.1', GroundingStandard::versionFor(false));
+        $this->assertSame('1.7', GroundingStandard::versionFor(true));
+    }
+
+    public function testTemplateDataDefaultsToBaseVersion(): void
     {
         $this->assertSame(
             ['version' => '1.6.1', 'specUrl' => 'https://groundingpage.com/spec/'],
             GroundingStandard::templateData(),
+        );
+        $this->assertSame(
+            ['version' => '1.7', 'specUrl' => 'https://groundingpage.com/spec/'],
+            GroundingStandard::templateData(true),
         );
     }
 
@@ -33,7 +44,7 @@ class GroundingStandardTest extends TestCase
 
         foreach ($files as $file) {
             $this->assertDoesNotMatchRegularExpression(
-                '/[\'"]1\.6(\.\d+)?[\'"]/',
+                '/[\'"]1\.[67](\.\d+)?[\'"]/',
                 $file->getContents(),
                 $file->getRelativePathname(),
             );

@@ -6,6 +6,7 @@ use Contao\DataContainer;
 use Contao\DC_Table;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Trassd\Contao\GroundingPages\Enum\GroundingEntityType;
+use Trassd\Contao\GroundingPages\Enum\ReviewerType;
 
 /*
  * Kopftabelle einer Grounding Page (die Entität + Governance). Die Abschnitte liegen in der
@@ -50,7 +51,7 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact,hideHumanNotice;{publish_legend},published',
+        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact,hideHumanNotice;{review_legend},reviewerType,reviewerName,lastReviewed;{publish_legend},published',
     ],
     'fields' => [
         'id' => [
@@ -180,6 +181,24 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
             'inputType' => 'checkbox',
             'eval' => ['tl_class' => 'w50 m12'],
             'sql' => "char(1) NOT NULL default ''",
+        ],
+        // Standard v1.7: menschliches Fakten-Review. Erst Name + Datum weisen die Seite als v1.7 aus.
+        'reviewerType' => [
+            'inputType' => 'select',
+            'options' => ReviewerType::values(),
+            'reference' => &$GLOBALS['TL_LANG']['tl_grounding_page']['reviewerTypes'],
+            'eval' => ['tl_class' => 'w50'],
+            'sql' => "varchar(16) NOT NULL default 'person'",
+        ],
+        'reviewerName' => [
+            'inputType' => 'text',
+            'eval' => ['maxlength' => 255, 'doNotCopy' => true, 'tl_class' => 'w50 clr'],
+            'sql' => "varchar(255) NOT NULL default ''",
+        ],
+        'lastReviewed' => [
+            'inputType' => 'text',
+            'eval' => ['rgxp' => 'date', 'datepicker' => true, 'doNotCopy' => true, 'tl_class' => 'w50 wizard'],
+            'sql' => 'int(10) unsigned NULL',
         ],
         'published' => [
             'inputType' => 'checkbox',

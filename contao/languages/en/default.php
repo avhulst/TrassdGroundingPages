@@ -6,7 +6,7 @@ $GLOBALS['TL_LANG']['grounding']['detail']['distinction'] = 'Distinction';
 $GLOBALS['TL_LANG']['grounding']['detail']['definedTerms'] = 'Defined Terms';
 $GLOBALS['TL_LANG']['grounding']['detail']['sources'] = 'Sources & Trust Signals';
 $GLOBALS['TL_LANG']['grounding']['detail']['identifiers'] = 'Identifiers';
-$GLOBALS['TL_LANG']['grounding']['detail']['verified'] = 'Last verified';
+$GLOBALS['TL_LANG']['grounding']['detail']['verified'] = 'Last updated';
 $GLOBALS['TL_LANG']['grounding']['detail']['status'] = 'Status';
 $GLOBALS['TL_LANG']['grounding']['detail']['geographicScope'] = 'Geographic scope';
 $GLOBALS['TL_LANG']['grounding']['detail']['parentEntity'] = 'Parent';
@@ -22,7 +22,9 @@ $GLOBALS['TL_LANG']['grounding']['detail']['furtherReading'] = 'Further reading 
 $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment'] = '%1$s operates in the %2$s segment.';
 $GLOBALS['TL_LANG']['grounding']['detail']['standardLinkText'] = 'Grounding Page Standard %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['standardText'] = 'This Grounding Page follows the %1$s (v%2$s).';
-$GLOBALS['TL_LANG']['grounding']['detail']['standardTextVerified'] = 'This Grounding Page follows the %1$s (v%2$s). Last verified: %3$s.';
+$GLOBALS['TL_LANG']['grounding']['detail']['standardTextUpdated'] = 'This Grounding Page follows the %1$s (v%2$s). Last updated: %3$s.';
+// Deprecated since 1.1.0, kept for overridden templates only: same text as standardTextUpdated.
+$GLOBALS['TL_LANG']['grounding']['detail']['standardTextVerified'] = $GLOBALS['TL_LANG']['grounding']['detail']['standardTextUpdated'];
 
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['label'] = 'Note for human readers';
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['text'] = 'This page contains structured, factual definitions for humans and AI systems.';
@@ -30,6 +32,8 @@ $GLOBALS['TL_LANG']['grounding']['humanNotice']['introLabel'] = 'Human introduct
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['introLinkText'] = 'To the homepage';
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['aboutLabel'] = 'What grounding pages are:';
 $GLOBALS['TL_LANG']['grounding']['humanNotice']['aboutLinkText'] = 'Grounding Page Project';
+
+$GLOBALS['TL_LANG']['grounding']['review']['notice'] = 'Facts reviewed by %1$s · Last reviewed by a human: %2$s';
 
 $GLOBALS['TL_LANG']['grounding']['entityType']['organization'] = 'Organisation';
 $GLOBALS['TL_LANG']['grounding']['entityType']['person'] = 'Person';
@@ -50,4 +54,4 @@ $GLOBALS['TL_LANG']['grounding']['entityType']['event'] = 'Event';
 $GLOBALS['TL_LANG']['grounding']['entityType']['metric'] = 'Metric';
 $GLOBALS['TL_LANG']['grounding']['entityType']['project'] = 'Project';
 
-$GLOBALS['TL_LANG']['CTE']['grounding_page'] = ['Grounding Page', 'Output a complete grounding page (Standard v1.6.1) inside an article.'];
+$GLOBALS['TL_LANG']['CTE']['grounding_page'] = ['Grounding Page', 'Output a complete grounding page (Standard v1.7) inside an article.'];

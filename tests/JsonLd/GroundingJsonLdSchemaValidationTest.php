@@ -115,6 +115,27 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
         $this->assertContains('geographicScope', array_column($mains[0]['additionalProperty'], 'name'));
     }
 
+    public function testReviewPropertiesSitOnTheSingleWebPage(): void
+    {
+        [, $manager, $builder] = $this->bootContext();
+
+        $builder->addToResponseContext(new GroundingPageDto(
+            name: 'CERN',
+            schemaType: 'Organization',
+            reviewerName: 'Jane Doe',
+            lastReviewed: '2026-10-02',
+        ));
+        $nodes = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
+
+        $webPages = array_values(array_filter($nodes, static fn (array $n): bool => 'WebPage' === $n['@type']));
+        $this->assertCount(1, $webPages);
+        $this->assertSame('2026-10-02', $webPages[0]['lastReviewed']);
+        $this->assertSame('Person', $webPages[0]['reviewedBy']['@type']);
+
+        $main = array_values(array_filter($nodes, static fn (array $n): bool => '#main' === ($n['@id'] ?? null)));
+        $this->assertArrayNotHasKey('reviewedBy', $main[0]);
+    }
+
     private function dto(): GroundingPageDto
     {
         return new GroundingPageDto(

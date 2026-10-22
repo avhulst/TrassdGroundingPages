@@ -11,6 +11,8 @@ use Twig\TwigFunction;
 /*
  * Stellt die Standardversion als Twig-Funktion bereit, damit der Footer auch in
  * überschriebenen Templates ohne durchgereichte Variable funktioniert.
+ * grounding_standard() ohne Argument liefert die Basisversion, behauptet also nie
+ * fälschlich v1.7.
  */
 final class GroundingStandardExtension extends AbstractExtension
 {

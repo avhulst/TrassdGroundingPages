@@ -12,6 +12,7 @@ use Spatie\SchemaOrg\Schema;
 use Spatie\SchemaOrg\WebPage;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
+use Trassd\Contao\GroundingPages\Enum\ReviewerType;
 use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 final readonly class GroundingJsonLdBuilder
@@ -47,6 +48,20 @@ final readonly class GroundingJsonLdBuilder
         // führen JSON-LD-Datumsstrings ('Y-m-d') direkt über setProperty ein.
         $webPage->setProperty('dateCreated', $dto->datePublished);
         $webPage->setProperty('dateModified', $dto->dateModified);
+
+        if (null !== $dto->datePublished) {
+            $webPage->setProperty('datePublished', $dto->datePublished);
+        }
+
+        // Standard v1.7: Review-Angaben nur bei dokumentiertem Review (Name + Datum),
+        // identisch zum sichtbaren Review-Hinweis.
+        if ($dto->isReviewed()) {
+            $webPage->setProperty('lastReviewed', $dto->lastReviewed);
+            $webPage->setProperty('reviewedBy', [
+                '@type' => ReviewerType::fromStringOrFallback($dto->reviewerType)->schemaType(),
+                'name' => $dto->reviewerName,
+            ]);
+        }
 
         if ('' !== $dto->publisher) {
             $webPage->publisher(Schema::organization()->name($dto->publisher));

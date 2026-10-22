@@ -11,6 +11,7 @@ use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
 use Trassd\Contao\GroundingPages\Enum\GroundingEntityType;
 use Trassd\Contao\GroundingPages\Enum\GroundingSectionType;
+use Trassd\Contao\GroundingPages\Enum\ReviewerType;
 use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
 
 final class GroundingPageComposer
@@ -47,6 +48,11 @@ final class GroundingPageComposer
             relationships: $this->relationships($page->relationships),
             isCustomSchemaType: '' !== trim((string) $page->customSchemaType),
             showHumanNotice: '1' !== (string) $page->hideHumanNotice,
+            reviewerType: ReviewerType::fromStringOrFallback((string) $page->reviewerType)->value,
+            // Contao kodiert Texteingaben beim Speichern; Markup und JSON-LD brauchen
+            // den Klartext.
+            reviewerName: StringUtil::revertInputEncoding(trim((string) $page->reviewerName)),
+            lastReviewed: $this->formatDate($page->lastReviewed),
         );
     }
 

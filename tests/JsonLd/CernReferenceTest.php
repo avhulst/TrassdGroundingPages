@@ -81,6 +81,16 @@ class CernReferenceTest extends TestCase
         $this->assertSame('Offizielle Website', $webPage['citation'][0]['name']);
     }
 
+    public function testHumanReviewIsMirroredOnWebPage(): void
+    {
+        $webPage = $this->firstOfType($this->graph(), 'WebPage');
+
+        $this->assertSame('2026-06-21', $webPage['lastReviewed']);
+        $this->assertSame('Organization', $webPage['reviewedBy']['@type']);
+        $this->assertSame('Grounding Page Editorial', $webPage['reviewedBy']['name']);
+        $this->assertSame('2026-06-20', $webPage['dateModified']);
+    }
+
     private function cern(): GroundingPageDto
     {
         return new GroundingPageDto(
@@ -102,6 +112,9 @@ class CernReferenceTest extends TestCase
             inLanguage: 'de',
             datePublished: '1954-09-29',
             dateModified: '2026-06-20',
+            reviewerType: 'organization',
+            reviewerName: 'Grounding Page Editorial',
+            lastReviewed: '2026-06-21',
             geographicScope: 'International',
             relationships: [
                 ['relation' => 'Betreibt', 'name' => 'Large Hadron Collider', 'url' => 'https://home.cern/science/accelerators/large-hadron-collider'],

@@ -36,6 +36,18 @@ final readonly class GroundingPageDto
         public array $relationships = [],
         public bool $isCustomSchemaType = false,
         public bool $showHumanNotice = true,
+        public string $reviewerType = 'person',
+        public string $reviewerName = '',
+        public string|null $lastReviewed = null,
     ) {
+    }
+
+    /**
+     * Standard v1.7: Eine Seite gilt erst mit Reviewer und Review-Datum als geprüft.
+     * Halbe Angaben (z. B. aus Importen) zählen als ungeprüft.
+     */
+    public function isReviewed(): bool
+    {
+        return '' !== $this->reviewerName && null !== $this->lastReviewed && '' !== $this->lastReviewed;
     }
 }

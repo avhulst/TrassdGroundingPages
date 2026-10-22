@@ -2,7 +2,7 @@
 
 *Deutsche Version: [README_DE.md](README_DE.md).*
 
-Integrates **Grounding Pages** according to the *Grounding Page Standard v1.6.1*
+Integrates **Grounding Pages** according to the *Grounding Page Standard v1.7*
 (<https://groundingpage.com/>) into Contao. A Grounding Page is a factual, clearly structured
 knowledge entry per entity — written for **humans and AI/answer engines** (GEO/AEO). The bundle
 provides a back end data model, a front end element and **exactly one** standard-compliant JSON-LD
@@ -17,7 +17,7 @@ Background and walkthrough (German blog post):
   child table holding the content sections.
 - **Embedded into the page.** The complete Grounding Page is placed as a **content element** inside
   an article and renders within the normal page layout (header, footer, theme).
-- **Full v1.6.1 ontology** (18 entity classes mapped to schema.org, fallback `Thing`), extensible via
+- **Full ontology** (18 entity classes mapped to schema.org, fallback `Thing`), extensible via
   a free-text field for arbitrary `@type` values.
 
 ## Requirements
@@ -42,8 +42,11 @@ Under **Content → Grounding Pages**, create an entity:
 - **Definition & distinction:** canonical definition, segment, classification (geographic scope,
   parent entity with URL, key relationships), “not to be confused with …”, external identity URLs
   (`sameAs`, e.g. Wikidata/Wikipedia/LinkedIn).
-- **Governance:** publisher, maintainer, status, version, publication date, last verified, a
+- **Governance:** publisher, maintainer, status, version, publication date, last updated, a
   changelog and a correction/contact path.
+- **Human fact review (Standard v1.7):** reviewer type (person or organization), reviewer name and
+  date of the last human review. Name and date must be entered together, the date must not be in
+  the future.
 
 Below that, add any number of drag-and-drop sortable **sections**. The chosen section type reveals
 the matching input fields:
@@ -60,6 +63,33 @@ the matching input fields:
 Section order is free (Standard v1.6.1: recommended, not mandatory). “Further reading” belongs in
 the lower part of the page and may come before or after the FAQ and sources. Classification metadata
 appears compactly in the page header, not as a separate section.
+
+### Human review and standard version
+
+Since Standard v1.7, a person must review and approve the facts of every Grounding Page before
+publication. A page with reviewer **and** review date shows the notice “Facts reviewed by … · Last
+reviewed by a human: …” in the footer, emits `reviewedBy` and `lastReviewed` on the `WebPage`, and
+declares Standard v1.7. Without a review the page stays a valid v1.6.1 page: no notice, no
+placeholder.
+
+- Set the review date only after a documented human review, never through imports, deploys or
+  automated checks.
+- A substantive change to facts requires a new review before publication. Typos, layout and
+  rewording without new facts do not.
+- If you name an organization, the reviewing person must remain traceable internally (Contao's
+  record versioning shows who saved the review).
+- “Last updated” (formerly “Last verified”) is the date of the last content change and is emitted as
+  `dateModified`. It is not a review date and is never converted into one.
+
+**Upgrade notes (Standard v1.7)**
+
+- Projects that override `grounding/_standard_footer.html.twig` or `grounding/_page.html.twig` must
+  include `@Contao/grounding/_review_notice.html.twig` and call
+  `grounding_standard(grounding.isReviewed)`. Otherwise the notice is missing and the footer shows
+  v1.6.1 while the JSON-LD already carries the review.
+- `GroundingStandard::VERSION` was removed. Use `GroundingStandard::BASE_VERSION`,
+  `REVIEWED_VERSION` or `versionFor(bool)`. The language key
+  `grounding.detail.standardTextVerified` is deprecated (alias of `standardTextUpdated`).
 
 The page header (name, definition, distinction, governance) is always rendered from the entity's
 main data — it is not a separate section.
@@ -87,11 +117,14 @@ language trees automatically.
 Each page produces **one** graph containing a `WebPage` whose `mainEntity` is the resolved main
 entity (e.g. `Organization`, `Person`, `Product`). `sameAs`, facts (`additionalProperty`),
 `DefinedTerm` and `FAQPage` nodes are generated from the sections. Sources appear as `citation` and
-further reading as `relatedLink` on the `WebPage`. Classification is mirrored with type-appropriate
-properties (`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), otherwise as
-`PropertyValue`. Segment and relationships are `PropertyValue` entries in `additionalProperty`. Output runs through Contao's
-response context, so the `<script type="application/ld+json">` ends up in the `<head>` — even when
-the element sits in the middle of the page content. Verifiable with the Schema.org validator.
+further reading as `relatedLink` on the `WebPage`. A reviewed page also carries `reviewedBy`
+(`Person` or `Organization`) and `lastReviewed`. `datePublished` mirrors the publication date next
+to `dateCreated`. Classification is mirrored with type-appropriate properties
+(`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), otherwise as `PropertyValue`.
+Segment and relationships are `PropertyValue` entries in `additionalProperty`. Output runs through
+Contao's response context, so the `<script type="application/ld+json">` ends up in the `<head>` —
+even when the element sits in the middle of the page content. Verifiable with the Schema.org
+validator.
 
 ## Extensibility
 

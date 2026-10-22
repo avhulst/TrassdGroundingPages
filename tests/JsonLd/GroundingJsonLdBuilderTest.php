@@ -253,6 +253,77 @@ class GroundingJsonLdBuilderTest extends TestCase
         }
     }
 
+    public function testWebPageCarriesDatePublishedNextToDateCreated(): void
+    {
+        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+
+        $this->assertSame('1954-09-29', $web['dateCreated']);
+        $this->assertSame('1954-09-29', $web['datePublished']);
+    }
+
+    public function testUnreviewedPageHasNoReviewProperties(): void
+    {
+        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+
+        $this->assertArrayNotHasKey('reviewedBy', $web);
+        $this->assertArrayNotHasKey('lastReviewed', $web);
+    }
+
+    public function testReviewedByPersonAndLastReviewed(): void
+    {
+        $web = $this->builder()->buildWebPage(new GroundingPageDto(
+            name: 'X',
+            schemaType: 'Thing',
+            dateModified: '2026-10-01',
+            reviewerName: 'Jane Doe',
+            lastReviewed: '2026-10-02',
+        ))->toArray();
+
+        $this->assertSame('2026-10-02', $web['lastReviewed']);
+        $this->assertSame('2026-10-01', $web['dateModified']);
+        $this->assertSame('Person', $web['reviewedBy']['@type']);
+        $this->assertSame('Jane Doe', $web['reviewedBy']['name']);
+    }
+
+    public function testReviewedByOrganization(): void
+    {
+        $web = $this->builder()->buildWebPage(new GroundingPageDto(
+            name: 'X',
+            schemaType: 'Thing',
+            reviewerType: 'organization',
+            reviewerName: 'Example Editorial Team',
+            lastReviewed: '2026-10-02',
+        ))->toArray();
+
+        $this->assertSame('Organization', $web['reviewedBy']['@type']);
+        $this->assertSame('Example Editorial Team', $web['reviewedBy']['name']);
+    }
+
+    public function testUnknownReviewerTypeInDtoFallsBackToPerson(): void
+    {
+        $web = $this->builder()->buildWebPage(new GroundingPageDto(
+            name: 'X',
+            schemaType: 'Thing',
+            reviewerType: 'team',
+            reviewerName: 'Jane Doe',
+            lastReviewed: '2026-10-02',
+        ))->toArray();
+
+        $this->assertSame('Person', $web['reviewedBy']['@type']);
+    }
+
+    public function testHalfReviewDataProducesNoReviewProperties(): void
+    {
+        $web = $this->builder()->buildWebPage(new GroundingPageDto(
+            name: 'X',
+            schemaType: 'Thing',
+            reviewerName: 'Jane Doe',
+        ))->toArray();
+
+        $this->assertArrayNotHasKey('reviewedBy', $web);
+        $this->assertArrayNotHasKey('lastReviewed', $web);
+    }
+
     private function builder(): GroundingJsonLdBuilder
     {
         return new GroundingJsonLdBuilder(new ResponseContextAccessor(new RequestStack()));
