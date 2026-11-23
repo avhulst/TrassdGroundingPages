@@ -65,7 +65,10 @@ final readonly class GroundingPageDto
         $out = [];
 
         foreach ($this->sameAs as $url) {
-            $out[$url] ??= ['label' => '', 'url' => $url];
+            // Nur http(s)-URLs: verhindert javascript:/data:-Links (Stored-XSS).
+            if (self::isUrl($url)) {
+                $out[$url] ??= ['label' => '', 'url' => $url];
+            }
         }
 
         foreach ($this->identifierRows() as $row) {
@@ -126,6 +129,6 @@ final readonly class GroundingPageDto
 
     private static function isUrl(string $value): bool
     {
-        return str_starts_with($value, 'http://') || str_starts_with($value, 'https://');
+        return 1 === preg_match('#^https?://#i', $value);
     }
 }

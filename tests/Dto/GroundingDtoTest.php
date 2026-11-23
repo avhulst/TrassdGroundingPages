@@ -125,4 +125,12 @@ class GroundingDtoTest extends TestCase
         $this->assertSame('2.0', $hidden->reviewStandard);
         $this->assertSame('CERN', $hidden->name);
     }
+
+    public function testNonHttpSameAsIsDroppedFromProfilesAndSameAsUrls(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sameAs: ['javascript:alert(1)', 'foo', 'https://example.org/a']);
+
+        $this->assertSame([['label' => '', 'url' => 'https://example.org/a']], $dto->officialProfiles());
+        $this->assertSame(['https://example.org/a'], $dto->sameAsUrls());
+    }
 }

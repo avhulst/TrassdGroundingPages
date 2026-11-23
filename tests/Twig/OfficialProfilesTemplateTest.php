@@ -22,6 +22,20 @@ class OfficialProfilesTemplateTest extends TwigTemplateTestCase
         $this->assertStringContainsString('<dd>25</dd>', $html);
     }
 
+    public function testNonHttpSameAsIsNeverRenderedAsLink(): void
+    {
+        $html = $this->renderPage(new GroundingPageDto(name: 'CERN', schemaType: 'Organization', sameAs: ['javascript:alert(1)', 'foo', 'HTTPS://example.org/x']));
+
+        $this->assertStringNotContainsString('javascript:', $html);
+        $this->assertStringNotContainsString('href="foo"', $html);
+        $this->assertStringContainsString('href="HTTPS://example.org/x"', $html);
+    }
+
+    public function testLabelledProfileShowsLabel(): void
+    {
+        $this->assertStringContainsString('ROR: <a href="https://ror.org/01ggx4157"', $this->renderPage($this->dto()));
+    }
+
     public function testSourcesSectionNoLongerShowsIdentifiers(): void
     {
         $html = $this->render('@Contao/grounding/section/_sources.html.twig', [
