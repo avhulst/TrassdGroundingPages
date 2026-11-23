@@ -10,6 +10,7 @@ use PHPUnit\Framework\Attributes\AllowMockObjectsWithoutExpectations;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
+use Trassd\Contao\GroundingPages\EventListener\DataContainer\DcaSiblingReader;
 use Trassd\Contao\GroundingPages\EventListener\DataContainer\ReviewFieldsListener;
 use Trassd\Contao\GroundingPages\Review\ReviewFieldsValidator;
 
@@ -93,7 +94,7 @@ class ReviewFieldsListenerTest extends ContaoTestCase
             ->willReturnArgument(0)
         ;
 
-        return new ReviewFieldsListener(new ReviewFieldsValidator(), $requestStack, $translator);
+        return new ReviewFieldsListener(new ReviewFieldsValidator(), new DcaSiblingReader($requestStack), $translator);
     }
 
     /**

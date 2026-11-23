@@ -66,3 +66,10 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['entityId'] = ['Entity-Identifier', 'Ab
 $GLOBALS['TL_LANG']['tl_grounding_page']['anchorUrl'] = ['Referenzseite (Anker)', 'URL der Seite, die diese Entität maßgeblich beschreibt, in der Sprache dieses Datensatzes. Leer = diese Seite ist die Referenzseite.'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandard'] = ['Geprüft nach Standard', 'Version, nach der das dokumentierte Review erfolgt ist. 2.0 erfordert das 7-Punkte-Review inklusive Referenzen. Leer = 1.7.'];
 $GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandards'] = ['1.7' => 'Standard 1.7 (6 Prüfpunkte)', '2.0' => 'Standard 2.0 (7 Prüfpunkte inkl. Referenzen)'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewStandardWithoutReview'] = '„Geprüft nach Standard“ erfordert Reviewer und Review-Datum.';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['notAbsoluteUrl'] = 'Bitte eine absolute http(s)-URL angeben (%s).';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['sameAs']['notHttp'] = '%s ist keine absolute http(s)-URL.';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['sameAs']['ownDomain'] = '%s zeigt auf eine eigene Seite. sameAs ist nur für externe offizielle Profile und Register gedacht (Standard 2.0, RI-3).';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['sameAs']['searchOrApi'] = '%s ist eine Such-, Listen- oder API-URL und darf nicht in sameAs stehen (RI-3).';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['sameAs']['doiOrArxiv'] = '%s verweist auf eine Publikation (DOI/arXiv). Publikationen sind Quellen, keine Identitätsreferenzen (RI-3).';
+$GLOBALS['TL_LANG']['tl_grounding_page']['error']['sameAs']['sectionAnchor'] = '%s verweist auf einen Abschnitt. sameAs muss auf einen Eintrag speziell zu dieser Entität zeigen (RI-3).';

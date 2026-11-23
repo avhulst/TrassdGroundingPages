@@ -15,6 +15,8 @@ final class ReviewFieldsValidator
 
     public const string ERROR_FUTURE = 'reviewInFuture';
 
+    public const string ERROR_STANDARD_WITHOUT_REVIEW = 'reviewStandardWithoutReview';
+
     /**
      * @param string $date Timestamp, formatierter POST-Wert oder ''. Das Geschwisterfeld
      *                     kommt als formatierter POST-String an, daher ein String; die
@@ -34,6 +36,20 @@ final class ReviewFieldsValidator
         // Tagesvergleich: Ein Review von heute ist gültig, egal zu welcher Uhrzeit.
         if ($hasDate && ctype_digit($date) && date('Y-m-d', (int) $date) > date('Y-m-d', $now)) {
             return self::ERROR_FUTURE;
+        }
+
+        return null;
+    }
+
+    /**
+     * Standard 2.0: „Geprüft nach“ gibt es nur mit vollständigem Review.
+     */
+    public function validateStandard(string $standard, string $name, string $date): string|null
+    {
+        $date = trim($date);
+
+        if ('' !== trim($standard) && ('' === trim($name) || '' === $date || '0' === $date)) {
+            return self::ERROR_STANDARD_WITHOUT_REVIEW;
         }
 
         return null;
