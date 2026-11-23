@@ -45,7 +45,7 @@ final readonly class ConformanceResolver
             [$identity->pageUrl, $identity->entityId, $identity->anchorUrl],
         )));
 
-        foreach ($this->policy->violations($dto->sameAsUrls(), $ownHosts) as $url => $violation) {
+        foreach ($this->policy->violations(array_values(array_unique([...$dto->sameAs, ...$dto->sameAsUrls()])), $ownHosts) as $url => $violation) {
             $violations[] = 'sameAs:'.$violation->value.':'.$url;
         }
 

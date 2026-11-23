@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Trassd\Contao\GroundingPages\Dto;
 
+use Trassd\Contao\GroundingPages\Reference\SameAsPolicy;
+
 final readonly class GroundingPageDto
 {
     /**
@@ -129,6 +131,6 @@ final readonly class GroundingPageDto
 
     private static function isUrl(string $value): bool
     {
-        return 1 === preg_match('#^https?://#i', $value);
+        return SameAsPolicy::isAbsoluteHttpUrl($value);
     }
 }

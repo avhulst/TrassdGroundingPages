@@ -64,6 +64,14 @@ class ConformanceResolverTest extends TestCase
         $this->assertSame('1.7', $result->version);
     }
 
+    public function testNonHttpSameAsDowngradesEvenThoughProfilesDropIt(): void
+    {
+        $result = $this->resolve($this->reviewed('2.0', ['foo']));
+
+        $this->assertSame('1.7', $result->version);
+        $this->assertSame(['sameAs:notHttp:foo'], $result->violations);
+    }
+
     public function testRelativeEntityIdDowngrades(): void
     {
         $identity = new EntityIdentity('https://example.com/cern', '#organization', 'https://example.com/cern', true);
