@@ -44,7 +44,7 @@ Under **Content → Grounding Pages**, create an entity:
   (`sameAs`, e.g. Wikidata/Wikipedia/LinkedIn), entity identifier and reference page (anchor).
 - **Governance:** publisher, maintainer, status, version, publication date, last updated, a
   changelog and a correction/contact path.
-- **Human fact review (Standard v1.7):** reviewer type (person or organization), reviewer name and
+- **Human fact review:** reviewer type (person or organization), reviewer name and
   date of the last human review. Name and date must be entered together, the date must not be in
   the future. “Reviewed against standard” (1.7 or 2.0) sets the version the page claims (see the
   Standard 2.0 section). It requires reviewer name and date; without them saving is rejected.

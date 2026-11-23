@@ -43,7 +43,7 @@ Unter **Inhalte → Grounding Pages** eine Entität anlegen:
   Referenzseite (Anker).
 - **Governance:** Herausgeber, Verantwortlich, Status, Version, Veröffentlichungsdatum, zuletzt
   aktualisiert, Änderungsprotokoll und ein Korrektur-/Kontaktpfad.
-- **Menschliches Fakten-Review (Standard v1.7):** Reviewer-Typ (Person oder Organisation),
+- **Menschliches Fakten-Review:** Reviewer-Typ (Person oder Organisation),
   Reviewer-Name und Datum des letzten menschlichen Reviews. Name und Datum gibt es nur zusammen, das
   Datum darf nicht in der Zukunft liegen. „Geprüft nach Standard“ (1.7 oder 2.0) legt fest, welche
   Version die Seite beansprucht (siehe Abschnitt Standard 2.0). Es setzt Reviewer-Name und Datum

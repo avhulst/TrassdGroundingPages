@@ -5,7 +5,7 @@ declare(strict_types=1);
 $GLOBALS['TL_LANG']['tl_grounding_page']['title_legend'] = 'Entität';
 $GLOBALS['TL_LANG']['tl_grounding_page']['definition_legend'] = 'Definition & Abgrenzung';
 $GLOBALS['TL_LANG']['tl_grounding_page']['governance_legend'] = 'Governance';
-$GLOBALS['TL_LANG']['tl_grounding_page']['review_legend'] = 'Menschliches Fakten-Review (Standard v1.7)';
+$GLOBALS['TL_LANG']['tl_grounding_page']['review_legend'] = 'Menschliches Fakten-Review';
 $GLOBALS['TL_LANG']['tl_grounding_page']['publish_legend'] = 'Veröffentlichung';
 
 $GLOBALS['TL_LANG']['tl_grounding_page']['title'] = ['Name / Titel', 'Sichtbarer Name der Entität und interner Titel.'];
