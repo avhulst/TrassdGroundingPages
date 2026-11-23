@@ -23,6 +23,26 @@ class GroundingStandardTest extends TestCase
         $this->assertSame('1.7', GroundingStandard::versionFor(true));
     }
 
+    public function testV2VersionConstant(): void
+    {
+        $this->assertSame('2.0', GroundingStandard::V2_VERSION);
+    }
+
+    public function testVersionForNeverReturnsV2(): void
+    {
+        $this->assertSame('1.7', GroundingStandard::versionFor(true));
+    }
+
+    public function testTemplateDataUsesResolvedVersionWhenGiven(): void
+    {
+        $this->assertSame(
+            ['version' => '2.0', 'specUrl' => 'https://groundingpage.com/spec/'],
+            GroundingStandard::templateData(true, '2.0'),
+        );
+        $this->assertSame('1.7', GroundingStandard::templateData(true, null)['version']);
+        $this->assertSame('1.7', GroundingStandard::templateData(true, '')['version']);
+    }
+
     public function testTemplateDataDefaultsToBaseVersion(): void
     {
         $this->assertSame(

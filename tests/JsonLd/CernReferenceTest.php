@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentity;
 
 /**
  * Reproduziert den CERN-Referenzdatensatz (Vorlage Teil K) und prüft den
@@ -25,19 +26,19 @@ class CernReferenceTest extends TestCase
         $nodes = $this->graph();
 
         $webPage = $this->firstOfType($nodes, 'WebPage');
-        $main = $this->firstOfType($nodes, 'Organization', '#main');
+        $main = $this->firstOfType($nodes, 'Organization', 'https://example.com/cern#organization');
 
         $this->assertSame('CERN', $webPage['name']);
         $this->assertSame('de', $webPage['inLanguage']);
         $this->assertSame('2026-06-20', $webPage['dateModified']);
         $this->assertSame('Grounding Page Project', $webPage['publisher']['name']);
-        $this->assertSame('#main', $main['@id']);
+        $this->assertSame('https://example.com/cern#organization', $main['@id']);
         $this->assertSame('CERN', $main['name']);
     }
 
     public function testSameAsCarriesAllIdentityUrls(): void
     {
-        $main = $this->firstOfType($this->graph(), 'Organization', '#main');
+        $main = $this->firstOfType($this->graph(), 'Organization', 'https://example.com/cern#organization');
 
         foreach ([
             'https://www.wikidata.org/wiki/Q42944',
@@ -51,7 +52,7 @@ class CernReferenceTest extends TestCase
 
     public function testAdditionalPropertyCarriesFactsStatusAndVersion(): void
     {
-        $main = $this->firstOfType($this->graph(), 'Organization', '#main');
+        $main = $this->firstOfType($this->graph(), 'Organization', 'https://example.com/cern#organization');
         $byName = array_column($main['additionalProperty'], 'value', 'name');
 
         $this->assertSame('29. September 1954', $byName['Gegründet']);
@@ -71,7 +72,7 @@ class CernReferenceTest extends TestCase
     {
         $nodes = $this->graph();
         $webPage = $this->firstOfType($nodes, 'WebPage');
-        $main = $this->firstOfType($nodes, 'Organization', '#main');
+        $main = $this->firstOfType($nodes, 'Organization', 'https://example.com/cern#organization');
         $byName = array_column($main['additionalProperty'], 'value', 'name');
 
         $this->assertSame('International', $main['areaServed']);
@@ -162,7 +163,7 @@ class CernReferenceTest extends TestCase
         $accessor = new ResponseContextAccessor($requestStack);
         $accessor->setResponseContext($context);
 
-        (new GroundingJsonLdBuilder($accessor))->addToResponseContext($this->cern());
+        (new GroundingJsonLdBuilder($accessor))->addToResponseContext($this->cern(), $this->identity());
 
         return $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
     }
@@ -181,5 +182,15 @@ class CernReferenceTest extends TestCase
         }
 
         $this->fail(\sprintf('No node of type %s%s found.', $type, null !== $id ? ' with @id '.$id : ''));
+    }
+
+    private function identity(): EntityIdentity
+    {
+        return new EntityIdentity(
+            pageUrl: 'https://example.com/cern',
+            entityId: 'https://example.com/cern#organization',
+            anchorUrl: 'https://example.com/cern',
+            isAnchor: true,
+        );
     }
 }

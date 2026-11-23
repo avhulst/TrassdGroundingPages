@@ -11,5 +11,8 @@ return static function (ContainerConfigurator $container): void {
         ->autoconfigure();
 
     $services->load('Trassd\\Contao\\GroundingPages\\', '../src/')
-        ->exclude('../src/{ContaoManager,Enum,Model,Dto}');
+        ->exclude([
+            '../src/{ContaoManager,Enum,Model,Dto}',
+            '../src/Reference/{EntityIdentity.php,ConformanceResult.php,SameAsViolation.php}',
+        ]);
 };

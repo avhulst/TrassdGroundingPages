@@ -13,6 +13,7 @@ use Trassd\Contao\GroundingPages\Enum\GroundingEntityType;
 use Trassd\Contao\GroundingPages\Enum\GroundingSectionType;
 use Trassd\Contao\GroundingPages\Enum\ReviewerType;
 use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
+use Trassd\Contao\GroundingPages\GroundingStandard;
 
 final class GroundingPageComposer
 {
@@ -53,6 +54,9 @@ final class GroundingPageComposer
             // den Klartext.
             reviewerName: StringUtil::revertInputEncoding(trim((string) $page->reviewerName)),
             lastReviewed: $this->formatDate($page->lastReviewed),
+            reviewStandard: \in_array((string) $page->reviewStandard, [GroundingStandard::REVIEWED_VERSION, GroundingStandard::V2_VERSION], true) ? (string) $page->reviewStandard : '',
+            entityId: trim((string) $page->entityId),
+            anchorUrl: trim((string) $page->anchorUrl),
         );
     }
 

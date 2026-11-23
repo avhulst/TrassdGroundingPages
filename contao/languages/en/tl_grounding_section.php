@@ -6,7 +6,7 @@ $GLOBALS['TL_LANG']['tl_grounding_section']['section_legend'] = 'Section';
 $GLOBALS['TL_LANG']['tl_grounding_section']['publish_legend'] = 'Publication';
 
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType'] = ['Section type', 'Determines the kind and input fields of the section.'];
-$GLOBALS['TL_LANG']['tl_grounding_section']['sectionTitle'] = ['Heading', 'Visible heading of this section (optional).'];
+$GLOBALS['TL_LANG']['tl_grounding_section']['sectionTitle'] = ['Heading', 'Visible heading of this section (optional). Include the entity name in the heading (standard 2.0, P-3). Empty = default heading with the name.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['factGrid'] = ['Fact grid', 'Rows of label and value.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['timelineItems'] = ['Timeline', 'Rows of year and event.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['definedTerms'] = ['Defined terms', 'Rows of term and definition.'];

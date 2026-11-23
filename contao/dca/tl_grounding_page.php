@@ -7,6 +7,7 @@ use Contao\DC_Table;
 use Doctrine\DBAL\Platforms\AbstractMySQLPlatform;
 use Trassd\Contao\GroundingPages\Enum\GroundingEntityType;
 use Trassd\Contao\GroundingPages\Enum\ReviewerType;
+use Trassd\Contao\GroundingPages\GroundingStandard;
 
 /*
  * Kopftabelle einer Grounding Page (die Entität + Governance). Die Abschnitte liegen in der
@@ -51,7 +52,7 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
         ],
     ],
     'palettes' => [
-        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact,hideHumanNotice;{review_legend},reviewerType,reviewerName,lastReviewed;{publish_legend},published',
+        'default' => '{title_legend},title,alias,language,entityType,customSchemaType;{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,entityId,anchorUrl,sameAs;{governance_legend},publisher,maintainer,status,entryVersion,datePublished,dateVerified,changelog,correctionContact,hideHumanNotice;{review_legend},reviewerType,reviewerName,lastReviewed,reviewStandard;{publish_legend},published',
     ],
     'fields' => [
         'id' => [
@@ -127,6 +128,18 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
             'eval' => ['rows' => 3, 'tl_class' => 'clr'],
             'sql' => 'text NULL',
         ],
+        // Standard 2.0 (RI-1/RI-2): leer = automatisch aus Anker-/Seiten-URL + Typ-Fragment.
+        'entityId' => [
+            'inputType' => 'text',
+            'eval' => ['rgxp' => 'url', 'decodeEntities' => true, 'maxlength' => 2048, 'tl_class' => 'w50'],
+            'sql' => "varchar(2048) NOT NULL default ''",
+        ],
+        // Leer = diese Seite ist der Referenzanker.
+        'anchorUrl' => [
+            'inputType' => 'text',
+            'eval' => ['rgxp' => 'url', 'decodeEntities' => true, 'maxlength' => 2048, 'tl_class' => 'w50'],
+            'sql' => "varchar(2048) NOT NULL default ''",
+        ],
         'sameAs' => [
             'inputType' => 'listWizard',
             'eval' => ['tl_class' => 'clr'],
@@ -199,6 +212,14 @@ $GLOBALS['TL_DCA']['tl_grounding_page'] = [
             'inputType' => 'text',
             'eval' => ['rgxp' => 'date', 'datepicker' => true, 'doNotCopy' => true, 'tl_class' => 'w50 wizard'],
             'sql' => 'int(10) unsigned NULL',
+        ],
+        // Standard 2.0: leer bei vorhandenem Review = 1.7, keine automatische Hochstufung.
+        'reviewStandard' => [
+            'inputType' => 'select',
+            'options' => [GroundingStandard::REVIEWED_VERSION, GroundingStandard::V2_VERSION],
+            'reference' => &$GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandards'],
+            'eval' => ['includeBlankOption' => true, 'doNotCopy' => true, 'tl_class' => 'w50'],
+            'sql' => "varchar(8) NOT NULL default ''",
         ],
         'published' => [
             'inputType' => 'checkbox',

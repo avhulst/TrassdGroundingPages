@@ -18,7 +18,7 @@
 
             {% if grounding.changelog %}
                 <div class="grounding-page__changelog">
-                    <h2>{{ 'grounding.detail.changelog'|trans([], 'contao_default') }}</h2>
+                    <h2>{{ 'grounding.detail.changelogNamed'|trans([grounding.name], 'contao_default') }}</h2>
                     <ul>
                         {% for entry in grounding.changelog %}
                             <li>
@@ -44,12 +44,12 @@
     {% include "@Contao/grounding/_review_notice.html.twig" with { grounding: grounding } only %}
 
     <p class="grounding-page__standard-text">
-        {%- set standard = grounding_standard(grounding.isReviewed) -%}
+        {%- set standard = grounding_standard(grounding.isReviewed, conformance.version|default(null)) -%}
         {%- set link = '<a href="' ~ standard.specUrl|e ~ '" rel="noopener" target="_blank">'
             ~ ('grounding.detail.standardLinkText'|trans([standard.version], 'contao_default'))
             ~ '</a>' -%}
         {% if grounding.dateModified %}
-            {{ 'grounding.detail.standardTextUpdated'|trans([link, standard.version, grounding.dateModified], 'contao_default')|raw }}
+            {{ 'grounding.detail.standardTextUpdated'|trans([link, standard.version, grounding.dateModified|e], 'contao_default')|raw }}
         {% else %}
             {{ 'grounding.detail.standardText'|trans([link, standard.version], 'contao_default')|raw }}
         {% endif %}

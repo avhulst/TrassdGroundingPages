@@ -6,7 +6,6 @@ namespace Trassd\Contao\GroundingPages\EventListener\DataContainer;
 
 use Contao\CoreBundle\DependencyInjection\Attribute\AsCallback;
 use Contao\DataContainer;
-use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Contracts\Translation\TranslatorInterface;
 use Trassd\Contao\GroundingPages\Review\ReviewFieldsValidator;
 
@@ -19,7 +18,7 @@ final readonly class ReviewFieldsListener
 {
     public function __construct(
         private ReviewFieldsValidator $validator,
-        private RequestStack $requestStack,
+        private DcaSiblingReader $siblings,
         private TranslatorInterface $translator,
     ) {
     }
@@ -27,7 +26,7 @@ final readonly class ReviewFieldsListener
     #[AsCallback(table: 'tl_grounding_page', target: 'fields.reviewerName.save')]
     public function onSaveReviewerName(mixed $value, DataContainer $dc): mixed
     {
-        $this->assertValid((string) $value, $this->sibling('lastReviewed', $dc));
+        $this->assertValid((string) $value, $this->siblings->read('lastReviewed', $dc));
 
         return $value;
     }
@@ -35,7 +34,7 @@ final readonly class ReviewFieldsListener
     #[AsCallback(table: 'tl_grounding_page', target: 'fields.lastReviewed.save')]
     public function onSaveLastReviewed(mixed $value, DataContainer $dc): mixed
     {
-        $this->assertValid($this->sibling('reviewerName', $dc), (string) ($value ?? ''));
+        $this->assertValid($this->siblings->read('reviewerName', $dc), (string) ($value ?? ''));
 
         return $value;
     }
@@ -47,20 +46,5 @@ final readonly class ReviewFieldsListener
         if (null !== $error) {
             throw new \RuntimeException($this->translator->trans('tl_grounding_page.error.'.$error, [], 'contao_tl_grounding_page'));
         }
-    }
-
-    private function sibling(string $field, DataContainer $dc): string
-    {
-        $post = $this->requestStack->getCurrentRequest()?->request;
-
-        foreach ([$field, $field.'_'.$dc->id] as $key) {
-            if (null !== $post && $post->has($key)) {
-                return trim((string) $post->get($key));
-            }
-        }
-
-        $record = $dc->getCurrentRecord();
-
-        return trim((string) ($record[$field] ?? ''));
     }
 }

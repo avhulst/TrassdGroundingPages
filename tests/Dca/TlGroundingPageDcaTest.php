@@ -50,7 +50,7 @@ class TlGroundingPageDcaTest extends TestCase
             'segment', 'distinction', 'sameAs', 'publisher', 'maintainer', 'status',
             'entryVersion', 'datePublished', 'dateVerified', 'changelog', 'correctionContact', 'published',
             'geographicScope', 'parentEntity', 'parentEntityUrl', 'relationships', 'hideHumanNotice',
-            'reviewerType', 'reviewerName', 'lastReviewed',
+            'reviewerType', 'reviewerName', 'lastReviewed', 'reviewStandard', 'entityId', 'anchorUrl',
         ] as $field) {
             yield $field => [$field];
         }
@@ -88,7 +88,7 @@ class TlGroundingPageDcaTest extends TestCase
     public function testClassificationFieldsFollowSegmentInDefinitionLegend(): void
     {
         $this->assertStringContainsString(
-            '{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,sameAs',
+            '{definition_legend},definition,segment,geographicScope,parentEntity,parentEntityUrl,relationships,distinction,entityId,anchorUrl,sameAs',
             $this->loadDca()['palettes']['default'],
         );
     }
@@ -120,9 +120,40 @@ class TlGroundingPageDcaTest extends TestCase
     public function testReviewLegendFollowsGovernanceAndPrecedesPublish(): void
     {
         $this->assertStringContainsString(
-            'hideHumanNotice;{review_legend},reviewerType,reviewerName,lastReviewed;{publish_legend},published',
+            'hideHumanNotice;{review_legend},reviewerType,reviewerName,lastReviewed,reviewStandard;{publish_legend},published',
             $this->loadDca()['palettes']['default'],
         );
+    }
+
+    public function testReferenceFieldsAreInDefinitionLegendBeforeSameAs(): void
+    {
+        $palette = $this->loadDca()['palettes']['default'];
+
+        $this->assertStringContainsString('distinction,entityId,anchorUrl,sameAs', $palette);
+        $this->assertStringContainsString('reviewerType,reviewerName,lastReviewed,reviewStandard', $palette);
+    }
+
+    public function testReviewStandardIsSelectThatIsNotCopied(): void
+    {
+        $field = $this->loadDca()['fields']['reviewStandard'];
+
+        $this->assertSame('select', $field['inputType']);
+        $this->assertSame(['1.7', '2.0'], $field['options']);
+        $this->assertTrue($field['eval']['includeBlankOption']);
+        $this->assertTrue($field['eval']['doNotCopy']);
+        $this->assertSame("varchar(8) NOT NULL default ''", $field['sql']);
+    }
+
+    public function testEntityIdAndAnchorUrlAreCopiedUrlFields(): void
+    {
+        foreach (['entityId', 'anchorUrl'] as $name) {
+            $field = $this->loadDca()['fields'][$name];
+
+            $this->assertSame('url', $field['eval']['rgxp'], $name);
+            $this->assertTrue($field['eval']['decodeEntities'], $name);
+            $this->assertArrayNotHasKey('doNotCopy', $field['eval'], $name);
+            $this->assertSame("varchar(2048) NOT NULL default ''", $field['sql'], $name);
+        }
     }
 
     public function testReviewerTypeIsSelectWithoutBlankDefaultingToPerson(): void

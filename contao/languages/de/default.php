@@ -3,8 +3,11 @@
 declare(strict_types=1);
 
 $GLOBALS['TL_LANG']['grounding']['detail']['distinction'] = 'Abgrenzung';
+$GLOBALS['TL_LANG']['grounding']['detail']['distinctionNamed'] = 'Abgrenzung von %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['definedTerms'] = 'Stabile Begriffe';
+$GLOBALS['TL_LANG']['grounding']['detail']['definedTermsNamed'] = 'Stabile Begriffe zu %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['sources'] = 'Quellen & Vertrauenssignale';
+$GLOBALS['TL_LANG']['grounding']['detail']['sourcesNamed'] = 'Quellen zu %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['identifiers'] = 'Identifikatoren';
 $GLOBALS['TL_LANG']['grounding']['detail']['verified'] = 'Zuletzt aktualisiert';
 $GLOBALS['TL_LANG']['grounding']['detail']['status'] = 'Status';
@@ -16,8 +19,12 @@ $GLOBALS['TL_LANG']['grounding']['detail']['maintainer'] = 'Verantwortlich';
 $GLOBALS['TL_LANG']['grounding']['detail']['version'] = 'Version';
 $GLOBALS['TL_LANG']['grounding']['detail']['published'] = 'Veröffentlicht';
 $GLOBALS['TL_LANG']['grounding']['detail']['changelog'] = 'Änderungsprotokoll';
+$GLOBALS['TL_LANG']['grounding']['detail']['changelogNamed'] = 'Änderungen an %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['reportCorrection'] = 'Korrektur melden:';
+$GLOBALS['TL_LANG']['grounding']['detail']['officialProfiles'] = 'Offizielle Profile und Kennungen von %s';
+$GLOBALS['TL_LANG']['grounding']['detail']['anchorLink'] = 'Offizielle Informationen zu %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['faq'] = 'Häufige Fragen';
+$GLOBALS['TL_LANG']['grounding']['detail']['faqNamed'] = 'Häufige Fragen zu %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['furtherReading'] = 'Weiterführende Literatur zu %1$s';
 $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment'] = '%1$s ist dem Segment %2$s zugeordnet.';
 $GLOBALS['TL_LANG']['grounding']['detail']['standardLinkText'] = 'Grounding Page Standard %s';
@@ -54,4 +61,4 @@ $GLOBALS['TL_LANG']['grounding']['entityType']['event'] = 'Veranstaltung';
 $GLOBALS['TL_LANG']['grounding']['entityType']['metric'] = 'Kennzahl';
 $GLOBALS['TL_LANG']['grounding']['entityType']['project'] = 'Projekt';
 
-$GLOBALS['TL_LANG']['CTE']['grounding_page'] = ['Grounding Page', 'Eine komplette Grounding Page (Standard v1.7) in einem Artikel ausgeben.'];
+$GLOBALS['TL_LANG']['CTE']['grounding_page'] = ['Grounding Page', 'Eine komplette Grounding Page in einem Artikel ausgeben.'];

@@ -33,4 +33,14 @@ class ReviewFieldsValidatorTest extends TestCase
     {
         $this->assertSame($expected, (new ReviewFieldsValidator())->validate($name, $date, self::NOW));
     }
+
+    public function testStandardRequiresCompleteReview(): void
+    {
+        $validator = new ReviewFieldsValidator();
+
+        $this->assertNull($validator->validateStandard('', '', ''));
+        $this->assertNull($validator->validateStandard('2.0', 'Jane Doe', '1763640000'));
+        $this->assertSame('reviewStandardWithoutReview', $validator->validateStandard('2.0', '', ''));
+        $this->assertSame('reviewStandardWithoutReview', $validator->validateStandard('1.7', 'Jane Doe', ''));
+    }
 }

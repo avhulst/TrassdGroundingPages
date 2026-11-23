@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentity;
 
 class GroundingJsonLdSchemaValidationTest extends TestCase
 {
@@ -21,7 +22,7 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
     {
         [, $manager, $builder] = $this->bootContext();
 
-        $builder->addToResponseContext($this->dto());
+        $builder->addToResponseContext($this->dto(), $this->identity());
         $graph = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray();
 
         $this->assertSame('https://schema.org', $graph['@context']);
@@ -32,24 +33,24 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
     {
         [, $manager, $builder] = $this->bootContext();
 
-        $builder->addToResponseContext($this->dto());
+        $builder->addToResponseContext($this->dto(), $this->identity());
         $nodes = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
 
         $webPages = array_values(array_filter($nodes, static fn (array $n): bool => 'WebPage' === $n['@type']));
-        $mains = array_values(array_filter($nodes, static fn (array $n): bool => '#main' === ($n['@id'] ?? null)));
+        $mains = array_values(array_filter($nodes, static fn (array $n): bool => 'https://example.com/cern#organization' === ($n['@id'] ?? null)));
 
         $this->assertCount(1, $webPages);
         $this->assertCount(1, $mains);
         $this->assertSame('Organization', $mains[0]['@type']);
-        $this->assertSame(['@id' => '#main'], $webPages[0]['mainEntity']);
-        $this->assertSame(['@id' => '#webpage'], $mains[0]['mainEntityOfPage']);
+        $this->assertSame(['@id' => 'https://example.com/cern#organization'], $webPages[0]['mainEntity']);
+        $this->assertSame('https://example.com/cern', $mains[0]['mainEntityOfPage']);
     }
 
     public function testGraphContainsDefinedTermAndFaqPageNodes(): void
     {
         [, $manager, $builder] = $this->bootContext();
 
-        $builder->addToResponseContext($this->dto());
+        $builder->addToResponseContext($this->dto(), $this->identity());
         $types = array_column($manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'], '@type');
 
         $this->assertContains('DefinedTerm', $types);
@@ -63,7 +64,7 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
         // Core seedet eine leere WebPage am Standard-Identifier.
         $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->set(Schema::webPage());
 
-        $builder->addToResponseContext($this->dto());
+        $builder->addToResponseContext($this->dto(), $this->identity());
         $nodes = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
 
         $webPages = array_filter($nodes, static fn (array $n): bool => 'WebPage' === $n['@type']);
@@ -75,7 +76,7 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
     {
         $builder = new GroundingJsonLdBuilder(new ResponseContextAccessor(new RequestStack()));
 
-        $builder->addToResponseContext($this->dto());
+        $builder->addToResponseContext($this->dto(), $this->identity());
 
         $this->expectNotToPerformAssertions();
     }
@@ -87,7 +88,7 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
         $accessor = new ResponseContextAccessor($requestStack);
         $accessor->setResponseContext(new ResponseContext());
 
-        (new GroundingJsonLdBuilder($accessor))->addToResponseContext($this->dto());
+        (new GroundingJsonLdBuilder($accessor))->addToResponseContext($this->dto(), $this->identity());
 
         $this->expectNotToPerformAssertions();
     }
@@ -101,10 +102,10 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
             schemaType: 'Person',
             geographicScope: 'London',
             parentEntity: 'Analytical Society',
-        ));
+        ), $this->identity());
 
         $nodes = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
-        $mains = array_values(array_filter($nodes, static fn (array $n): bool => '#main' === ($n['@id'] ?? null)));
+        $mains = array_values(array_filter($nodes, static fn (array $n): bool => 'https://example.com/cern#organization' === ($n['@id'] ?? null)));
 
         $this->assertCount(1, $mains);
 
@@ -124,7 +125,7 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
             schemaType: 'Organization',
             reviewerName: 'Jane Doe',
             lastReviewed: '2026-10-02',
-        ));
+        ), $this->identity());
         $nodes = $manager->getGraphForSchema(JsonLdManager::SCHEMA_ORG)->toArray()['@graph'];
 
         $webPages = array_values(array_filter($nodes, static fn (array $n): bool => 'WebPage' === $n['@type']));
@@ -132,7 +133,7 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
         $this->assertSame('2026-10-02', $webPages[0]['lastReviewed']);
         $this->assertSame('Person', $webPages[0]['reviewedBy']['@type']);
 
-        $main = array_values(array_filter($nodes, static fn (array $n): bool => '#main' === ($n['@id'] ?? null)));
+        $main = array_values(array_filter($nodes, static fn (array $n): bool => 'https://example.com/cern#organization' === ($n['@id'] ?? null)));
         $this->assertArrayNotHasKey('reviewedBy', $main[0]);
     }
 
@@ -164,5 +165,15 @@ class GroundingJsonLdSchemaValidationTest extends TestCase
         $accessor->setResponseContext($context);
 
         return [$context, $manager, new GroundingJsonLdBuilder($accessor)];
+    }
+
+    private function identity(): EntityIdentity
+    {
+        return new EntityIdentity(
+            pageUrl: 'https://example.com/cern',
+            entityId: 'https://example.com/cern#organization',
+            anchorUrl: 'https://example.com/cern',
+            isAnchor: true,
+        );
     }
 }

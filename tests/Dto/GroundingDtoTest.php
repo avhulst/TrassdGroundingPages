@@ -78,4 +78,66 @@ class GroundingDtoTest extends TestCase
         $this->assertInstanceOf(GroundingSectionDto::class, $dto->sections[0]);
         $this->assertSame('https://home.cern/', $dto->sameAs[0]);
     }
+
+    public function testNewReferenceFieldsDefaultToEmpty(): void
+    {
+        $dto = new GroundingPageDto(name: 'CERN', schemaType: 'Organization');
+
+        $this->assertSame('', $dto->reviewStandard);
+        $this->assertSame('', $dto->entityId);
+        $this->assertSame('', $dto->anchorUrl);
+    }
+
+    public function testOfficialProfilesMergeSameAsAndUrlIdentifiersWithoutDuplicates(): void
+    {
+        $dto = new GroundingPageDto(
+            name: 'CERN',
+            schemaType: 'Organization',
+            sameAs: ['https://www.wikidata.org/wiki/Q42944'],
+            sections: [
+                new GroundingSectionDto(sectionType: 'sources', identifiers: [
+                    ['label' => 'Wikidata', 'value' => 'https://www.wikidata.org/wiki/Q42944'],
+                    ['label' => 'ROR', 'value' => 'https://ror.org/01ggx4157'],
+                    ['label' => 'Mitgliedstaaten', 'value' => '25'],
+                    ['label' => '', 'value' => 'ohne Label'],
+                ]),
+            ],
+        );
+
+        $this->assertSame(
+            [
+                ['label' => '', 'url' => 'https://www.wikidata.org/wiki/Q42944'],
+                ['label' => 'ROR', 'url' => 'https://ror.org/01ggx4157'],
+            ],
+            $dto->officialProfiles(),
+        );
+        $this->assertSame(['https://www.wikidata.org/wiki/Q42944', 'https://ror.org/01ggx4157'], $dto->sameAsUrls());
+        $this->assertSame([['label' => 'Mitgliedstaaten', 'value' => '25']], $dto->identifierValues());
+    }
+
+    public function testWithHumanNoticeReturnsChangedCopy(): void
+    {
+        $dto = new GroundingPageDto(name: 'CERN', schemaType: 'Organization', reviewStandard: '2.0');
+        $hidden = $dto->withHumanNotice(false);
+
+        $this->assertTrue($dto->showHumanNotice);
+        $this->assertFalse($hidden->showHumanNotice);
+        $this->assertSame('2.0', $hidden->reviewStandard);
+        $this->assertSame('CERN', $hidden->name);
+    }
+
+    public function testInternationalisedSameAsStaysInProfiles(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sameAs: ['https://de.wikipedia.org/wiki/Müller']);
+
+        $this->assertSame(['https://de.wikipedia.org/wiki/Müller'], $dto->sameAsUrls());
+    }
+
+    public function testNonHttpSameAsIsDroppedFromProfilesAndSameAsUrls(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sameAs: ['javascript:alert(1)', 'foo', 'https://a b', 'https://example.org/a']);
+
+        $this->assertSame([['label' => '', 'url' => 'https://example.org/a']], $dto->officialProfiles());
+        $this->assertSame(['https://example.org/a'], $dto->sameAsUrls());
+    }
 }
