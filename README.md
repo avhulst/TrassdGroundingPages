@@ -47,7 +47,7 @@ Under **Content → Grounding Pages**, create an entity:
 - **Human fact review (Standard v1.7):** reviewer type (person or organization), reviewer name and
   date of the last human review. Name and date must be entered together, the date must not be in
   the future. “Reviewed against standard” (1.7 or 2.0) sets the version the page claims (see the
-  Standard 2.0 section).
+  Standard 2.0 section). It requires reviewer name and date; without them saving is rejected.
 
 Below that, add any number of drag-and-drop sortable **sections**. The chosen section type reveals
 the matching input fields:
@@ -108,7 +108,8 @@ RI-7). The bundle decides per page which version it states. **Nothing is upgrade
 
 Existing records therefore stay v1.7 or v1.6.1 without any data change. If a reviewed 2.0 page fails
 a check at render time, it is downgraded to 1.7 and a warning goes to the Contao log (record and
-violations), so a page never claims 2.0 falsely. On 2.0 pages the hint for human readers is hidden.
+violations; at most once a day per page and set of violations, via the `cache.app` pool), so a page
+never claims 2.0 falsely. On 2.0 pages the hint for human readers is hidden.
 
 **Entity identifier and reference page**
 
@@ -124,13 +125,20 @@ violations), so a page never claims 2.0 falsely. On 2.0 pages the hint for human
   language. **Multilingual case:** use the same `entityId` in every language record (ideally the
   `x-default` anchor URL with a fragment), set `anchorUrl` per language to that language's anchor URL,
   and leave it empty on the anchor page itself.
+- **Your own organisation (site publisher):** if the record describes the publisher of the site and
+  `trassd/contao-schema-essentials` is installed, set `entityId` to its publisher id
+  (`<root page base URL>#organization`, or `#person` for a person publisher). The same entity then has
+  one `@id` site-wide.
+- Stored values that are not absolute http(s) URLs (e.g. written by import or SQL past the save check)
+  are ignored at render time (automatic fallback), and a reviewed 2.0 page is downgraded to 1.7.
 
 **`sameAs` rules (RI-3)** — only official profiles, identity registers (Wikidata, ISNI, ORCID, GND,
 LEI, commercial register) or reference entries specifically about this entity. A URL is rejected if it:
 
 1. is not an absolute http(s) URL,
-2. points to your own domain (host of the page, the identifier or the anchor, and the domains of all
-   root pages; `www.` and subdomains are normalised),
+2. points to your own domain (`www.` and subdomains are normalised). Own hosts on save: the hosts of
+   `entityId` and `anchorUrl` plus the domains (DNS) of all root pages. At render time: the hosts of
+   the page URL, the entity identifier and the anchor,
 3. is a search, list or API URL (`/search`, `/api/`, `api.php`, `Special:Search`, or a query `q`, `s`,
    `query`, `search`),
 4. points to a publication (`doi.org`, `dx.doi.org`, `arxiv.org`),
@@ -165,7 +173,7 @@ applies to all versions. Standard headings now carry the entity name (P-3): “D
 
 - Run `vendor/bin/contao-console contao:migrate` (three new columns: `reviewStandard`, `entityId`,
   `anchorUrl`) and `vendor/bin/contao-console cache:clear`. New requirements: `ext-filter`,
-  `psr/log`, `symfony/string`, `doctrine/dbal`, `symfony/routing`.
+  `psr/log`, `symfony/string`, `doctrine/dbal`, `symfony/routing`, `symfony/cache-contracts`.
 - The template receives two new variables: `identity` (page URL, `entityId`, `anchorUrl`, `isAnchor`)
   and `conformance` (stated `version`, violations).
 - Overridden footers should call `grounding_standard(grounding.isReviewed, conformance.version)`.

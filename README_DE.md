@@ -46,7 +46,8 @@ Unter **Inhalte → Grounding Pages** eine Entität anlegen:
 - **Menschliches Fakten-Review (Standard v1.7):** Reviewer-Typ (Person oder Organisation),
   Reviewer-Name und Datum des letzten menschlichen Reviews. Name und Datum gibt es nur zusammen, das
   Datum darf nicht in der Zukunft liegen. „Geprüft nach Standard“ (1.7 oder 2.0) legt fest, welche
-  Version die Seite beansprucht (siehe Abschnitt Standard 2.0).
+  Version die Seite beansprucht (siehe Abschnitt Standard 2.0). Es setzt Reviewer-Name und Datum
+  voraus; ohne beide wird das Speichern abgelehnt.
 
 Darunter beliebig viele, per Drag & Drop sortierbare **Abschnitte**. Der gewählte Abschnittstyp
 schaltet die passenden Eingabefelder frei:
@@ -108,7 +109,8 @@ automatisch hochgestuft.**
 
 Bestehende Datensätze bleiben deshalb ohne Datenänderung 1.7 bzw. 1.6.1. Besteht eine 2.0-Seite zur
 Laufzeit eine Prüfung nicht, wird sie auf 1.7 herabgestuft und eine Warnung ins Contao-Log
-geschrieben (Datensatz und Verstöße). Die Seite behauptet also nie fälschlich 2.0. Auf 2.0-Seiten
+geschrieben (Datensatz und Verstöße; höchstens einmal täglich je Seite und Verstoß-Kombination, über
+den Pool `cache.app`). Die Seite behauptet also nie fälschlich 2.0. Auf 2.0-Seiten
 ist der Hinweis für menschliche Leser ausgeblendet.
 
 **Entity-Identifier und Referenzseite**
@@ -126,14 +128,22 @@ ist der Hinweis für menschliche Leser ausgeblendet.
   Sprache eingebunden ist. **Mehrsprachiger Fall:** in allen Sprachdatensätzen denselben `entityId`
   setzen (am besten die `x-default`-Anker-URL mit Fragment), `anchorUrl` je Sprache mit der Anker-URL
   der eigenen Sprache füllen und auf der Ankerseite selbst leer lassen.
+- **Eigene Organisation (Herausgeber der Website):** beschreibt der Datensatz den Herausgeber und ist
+  `trassd/contao-schema-essentials` installiert, `entityId` auf dessen Publisher-ID setzen
+  (`<Basis-URL der Startseite>#organization`, bei einer Person `#person`). Dieselbe Entität hat dann
+  website-weit eine `@id`.
+- Gespeicherte Werte, die keine absoluten http(s)-URLs sind (z. B. per Import oder SQL an der
+  Speicherprüfung vorbei), werden beim Rendern ignoriert (automatischer Rückfall), und eine geprüfte
+  2.0-Seite wird auf 1.7 herabgestuft.
 
 **`sameAs`-Regeln (RI-3)** — nur offizielle Profile, Einträge in Identitätsregistern (Wikidata, ISNI,
 ORCID, GND, LEI, Handelsregister) oder Nachschlagewerk-Einträge speziell zu dieser Entität. Eine URL
 wird abgelehnt, wenn sie
 
 1. keine absolute http(s)-URL ist,
-2. auf die eigene Domain zeigt (Host von Seite, Identifier oder Anker sowie die Domains aller
-   Startseiten; `www.` und Subdomains werden normalisiert),
+2. auf die eigene Domain zeigt (`www.` und Subdomains werden normalisiert). Eigene Hosts beim
+   Speichern: die Hosts von `entityId` und `anchorUrl` sowie die Domains (DNS) aller Startseiten. Beim
+   Rendern: die Hosts von Seiten-URL, Entity-Identifier und Anker,
 3. eine Such-, Listen- oder API-URL ist (`/search`, `/api/`, `api.php`, `Special:Search` oder eine
    Query `q`, `s`, `query`, `search`),
 4. auf eine Publikation zeigt (`doi.org`, `dx.doi.org`, `arxiv.org`),
@@ -169,7 +179,8 @@ zu …“, „Änderungen an …“, „Stabile Begriffe zu …“, „Häufige 
 
 - `vendor/bin/contao-console contao:migrate` ausführen (drei neue Spalten: `reviewStandard`,
   `entityId`, `anchorUrl`) und `vendor/bin/contao-console cache:clear`. Neue Abhängigkeiten:
-  `ext-filter`, `psr/log`, `symfony/string`, `doctrine/dbal`, `symfony/routing`.
+  `ext-filter`, `psr/log`, `symfony/string`, `doctrine/dbal`, `symfony/routing`,
+  `symfony/cache-contracts`.
 - Das Template erhält zwei neue Variablen: `identity` (Seiten-URL, `entityId`, `anchorUrl`,
   `isAnchor`) und `conformance` (genannte `version`, Verstöße).
 - Überschriebene Footer rufen `grounding_standard(grounding.isReviewed, conformance.version)` auf. Mit
