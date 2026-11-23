@@ -2,7 +2,7 @@
 
 *Deutsche Version: [README_DE.md](README_DE.md).*
 
-Integrates **Grounding Pages** according to the *Grounding Page Standard v1.7*
+Integrates **Grounding Pages** according to the *Grounding Page Standard v2.0*
 (<https://groundingpage.com/>) into Contao. A Grounding Page is a factual, clearly structured
 knowledge entry per entity — written for **humans and AI/answer engines** (GEO/AEO). The bundle
 provides a back end data model, a front end element and **exactly one** standard-compliant JSON-LD
@@ -41,12 +41,13 @@ Under **Content → Grounding Pages**, create an entity:
 - **Entity:** name, alias, language, entity type, optional custom schema.org type.
 - **Definition & distinction:** canonical definition, segment, classification (geographic scope,
   parent entity with URL, key relationships), “not to be confused with …”, external identity URLs
-  (`sameAs`, e.g. Wikidata/Wikipedia/LinkedIn).
+  (`sameAs`, e.g. Wikidata/Wikipedia/LinkedIn), entity identifier and reference page (anchor).
 - **Governance:** publisher, maintainer, status, version, publication date, last updated, a
   changelog and a correction/contact path.
 - **Human fact review (Standard v1.7):** reviewer type (person or organization), reviewer name and
   date of the last human review. Name and date must be entered together, the date must not be in
-  the future.
+  the future. “Reviewed against standard” (1.7 or 2.0) sets the version the page claims (see the
+  Standard 2.0 section).
 
 Below that, add any number of drag-and-drop sortable **sections**. The chosen section type reveals
 the matching input fields:
@@ -93,6 +94,90 @@ placeholder.
 
 The page header (name, definition, distinction, governance) is always rendered from the entity's
 main data — it is not a separate section.
+
+### Standard 2.0 (reference integrity)
+
+Standard 2.0 adopts v1.7 as part A (page quality) and adds part B (reference integrity, RI-1 to
+RI-7). The bundle decides per page which version it states. **Nothing is upgraded automatically.**
+
+| Standard | Condition                                                                                     |
+| -------- | --------------------------------------------------------------------------------------------- |
+| 1.6.1    | No human review (reviewer name and date missing).                                             |
+| 1.7      | Human review, field “Reviewed against standard” empty or `1.7`. Also the fallback for 2.0.    |
+| 2.0      | Human review, “Reviewed against standard” = `2.0` **and** all reference checks pass.          |
+
+Existing records therefore stay v1.7 or v1.6.1 without any data change. If a reviewed 2.0 page fails
+a check at render time, it is downgraded to 1.7 and a warning goes to the Contao log (record and
+violations), so a page never claims 2.0 falsely. On 2.0 pages the hint for human readers is hidden.
+
+**Entity identifier and reference page**
+
+- **Entity identifier** (`entityId`): absolute, stable URI of the entity, used as `@id` of the main
+  entity. Empty means automatic: anchor URL (or page URL) plus a type fragment (`#organization`,
+  `#person`, `#softwareapplication`, `#entity` for `Thing`). Internationalised URLs (umlauts, IDN
+  hosts) are accepted.
+- **Reference page (anchor)** (`anchorUrl`): URL of the page that authoritatively describes the entity,
+  in the language of the record. Empty means this page is the anchor. `mainEntityOfPage` points to the
+  anchor; pages that are not the anchor (`isAnchor` is false) show a visible link “Official information
+  on …” to it. A page whose `anchorUrl` equals its own URL counts as the anchor.
+- The automatic identifier is stable only while a record is embedded on exactly one page in one
+  language. **Multilingual case:** use the same `entityId` in every language record (ideally the
+  `x-default` anchor URL with a fragment), set `anchorUrl` per language to that language's anchor URL,
+  and leave it empty on the anchor page itself.
+
+**`sameAs` rules (RI-3)** — only official profiles, identity registers (Wikidata, ISNI, ORCID, GND,
+LEI, commercial register) or reference entries specifically about this entity. A URL is rejected if it:
+
+1. is not an absolute http(s) URL,
+2. points to your own domain (host of the page, the identifier or the anchor, and the domains of all
+   root pages; `www.` and subdomains are normalised),
+3. is a search, list or API URL (`/search`, `/api/`, `api.php`, `Special:Search`, or a query `q`, `s`,
+   `query`, `search`),
+4. points to a publication (`doi.org`, `dx.doi.org`, `arxiv.org`),
+5. has a fragment (section of someone else's entry).
+
+On a record with “Reviewed against standard 2.0”, a violation **blocks saving** with one message per
+URL and reason. Otherwise (1.7 or no review) the same check only shows a notice. Whether a profile is
+really official remains the reviewer's decision; there is no allowlist and no reachability check.
+Values that are not http(s) URLs are dropped from the JSON-LD and the visible block, and a reviewed
+2.0 page with such a value is downgraded to 1.7 at render time.
+
+**Official profiles and identifiers.** Every `sameAs` URL and every identifier of the main entity is
+shown in the visible block “Official profiles and identifiers of …” directly before the standard
+footer (RI-4). `sameAs` URLs appear as links, identifiers as a label/value list. The “Sources”
+section now contains only sources (default heading “Sources about …”), so official profiles stay
+distinguishable from third-party reports (RI-5). In JSON-LD, non-URL identifiers are emitted as
+`identifier` (`PropertyValue` with `propertyID` and `value`) instead of `additionalProperty`; this
+applies to all versions. Standard headings now carry the entity name (P-3): “Distinguishing …”,
+“Sources about …”, “Changes to …”.
+
+**Upgrade 1.7 → 2.0 for editors**
+
+1. Check `Entity identifier`, set it if the record is used on several pages or languages.
+2. Set the `Reference page (anchor)` on non-anchor pages and language versions.
+3. Check `sameAs` against the rules above and remove own pages, search/API URLs, DOI/arXiv and
+   section links.
+4. Perform the 7-point review (the 6 v1.7 points plus references) and document it, e.g. through the
+   reviewer name and date.
+5. Set “Reviewed against standard” to `2.0`.
+
+**Upgrade notes for developers and template overrides (Standard 2.0)**
+
+- Run `vendor/bin/contao-console contao:migrate` (three new columns: `reviewStandard`, `entityId`,
+  `anchorUrl`) and `vendor/bin/contao-console cache:clear`. New requirements: `ext-filter`,
+  `psr/log`, `symfony/string`, `doctrine/dbal`, `symfony/routing`.
+- The template receives two new variables: `identity` (page URL, `entityId`, `anchorUrl`, `isAnchor`)
+  and `conformance` (stated `version`, violations).
+- Overridden footers should call `grounding_standard(grounding.isReviewed, conformance.version)`.
+  With only `grounding.isReviewed` a template states at most 1.7, never 2.0.
+- The translation keys `grounding.detail.distinction`, `sources` and `changelog` now take `%s` (the
+  entity name). New keys: `officialProfiles`, `anchorLink`.
+- Identifiers moved from `_sources.html.twig` to `_official_profiles.html.twig`. The block is a
+  `<section>` child of the page wrapper, placed before the standard footer. Overridden `_sources`
+  templates keep working (`section.identifiers` remains in the DTO) but should no longer print
+  identifiers, otherwise they appear twice.
+- The JSON-LD uses absolute `@id`s: WebPage `@id` = page URL, `DefinedTerm` = `<page>#term-<slug>`,
+  FAQ = `<page>#faq`, and the parent entity is its own node when a parent URL is set.
 
 ## Embedding into a page (front end)
 
