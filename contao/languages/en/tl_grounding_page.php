@@ -62,3 +62,7 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['metric'] = 'Metric';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['project'] = 'Project';
 $GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewIncomplete'] = 'Please enter both reviewer and review date, or leave both empty.';
 $GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewInFuture'] = 'The review date must not be in the future.';
+$GLOBALS['TL_LANG']['tl_grounding_page']['entityId'] = ['Entity identifier', 'Absolute, stable URI of the entity, e.g. https://example.com/about/#organization. Empty = derived from the anchor or page URL. With several pages or language versions, enter the same value in all records (ideally using the x-default URL of the anchor).'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['anchorUrl'] = ['Reference page (anchor)', 'URL of the page that authoritatively describes this entity, in the language of this record. Empty = this page is the reference page.'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandard'] = ['Reviewed against standard', 'Version the documented review followed. 2.0 requires the 7-point review including references. Empty = 1.7.'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandards'] = ['1.7' => 'Standard 1.7 (6 review points)', '2.0' => 'Standard 2.0 (7 review points incl. references)'];

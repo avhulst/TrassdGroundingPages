@@ -62,3 +62,7 @@ $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['metric'] = 'Kennzahl';
 $GLOBALS['TL_LANG']['tl_grounding_page']['entityType']['project'] = 'Projekt';
 $GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewIncomplete'] = 'Bitte Reviewer und Review-Datum gemeinsam angeben oder beide leer lassen.';
 $GLOBALS['TL_LANG']['tl_grounding_page']['error']['reviewInFuture'] = 'Das Review-Datum darf nicht in der Zukunft liegen.';
+$GLOBALS['TL_LANG']['tl_grounding_page']['entityId'] = ['Entity-Identifier', 'Absolute, stabile URI der Entität, z. B. https://example.com/about/#organization. Leer = automatisch aus Anker- bzw. Seiten-URL. Bei mehreren Seiten oder Sprachversionen in allen Datensätzen denselben Wert eintragen (am besten mit der x-default-URL des Ankers).'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['anchorUrl'] = ['Referenzseite (Anker)', 'URL der Seite, die diese Entität maßgeblich beschreibt, in der Sprache dieses Datensatzes. Leer = diese Seite ist die Referenzseite.'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandard'] = ['Geprüft nach Standard', 'Version, nach der das dokumentierte Review erfolgt ist. 2.0 erfordert das 7-Punkte-Review inklusive Referenzen. Leer = 1.7.'];
+$GLOBALS['TL_LANG']['tl_grounding_page']['reviewStandards'] = ['1.7' => 'Standard 1.7 (6 Prüfpunkte)', '2.0' => 'Standard 2.0 (7 Prüfpunkte inkl. Referenzen)'];

@@ -269,6 +269,28 @@ class GroundingPageComposerTest extends ContaoTestCase
         $this->assertTrue($dto->isReviewed());
     }
 
+    public function testComposesReferenceFields(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage([
+            'title' => 'CERN',
+            'entityType' => 'organization',
+            'reviewStandard' => '2.0',
+            'entityId' => ' https://example.com/about/#organization ',
+            'anchorUrl' => 'https://example.com/about/',
+        ]));
+
+        $this->assertSame('2.0', $dto->reviewStandard);
+        $this->assertSame('https://example.com/about/#organization', $dto->entityId);
+        $this->assertSame('https://example.com/about/', $dto->anchorUrl);
+    }
+
+    public function testUnknownReviewStandardIsDropped(): void
+    {
+        $dto = (new GroundingPageComposer())->compose($this->mockPage(['title' => 'CERN', 'reviewStandard' => '9.9']));
+
+        $this->assertSame('', $dto->reviewStandard);
+    }
+
     public function testReviewerNameIsDecodedFromInputEncoding(): void
     {
         $dto = (new GroundingPageComposer())->compose($this->mockPage([
