@@ -2,7 +2,7 @@
 
 Integriert **Grounding Pages** nach dem *Grounding Page Standard v2.0*
 (<https://groundingpage.com/>) in Contao. Eine Grounding Page ist ein faktischer, klar
-strukturierter Wissenseintrag pro Entität — geschrieben für **Menschen und KI-/Antwortmaschinen**
+strukturierter Wissenseintrag pro Entität, geschrieben für **Menschen und KI-/Antwortmaschinen**
 (GEO/AEO). Das Bundle liefert dafür ein Backend-Modell, ein Frontend-Element und **genau ein**
 standardkonformes JSON-LD-Dokument pro Seite.
 
@@ -21,7 +21,7 @@ Hintergründe und Praxis im Blogbeitrag:
 ## Anforderungen
 
 - PHP `^8.3`, Contao `^5.7`
-- `spatie/schema-org` (`^3.10 || ^4.0`) — wird von Contao-Core bereitgestellt
+- `spatie/schema-org` (`^3.10 || ^4.0`), im Contao-Core enthalten
 
 ## Installation
 
@@ -46,8 +46,8 @@ Unter **Inhalte → Grounding Pages** eine Entität anlegen:
 - **Menschliches Fakten-Review:** Reviewer-Typ (Person oder Organisation),
   Reviewer-Name und Datum des letzten menschlichen Reviews. Name und Datum gibt es nur zusammen, das
   Datum darf nicht in der Zukunft liegen. „Geprüft nach Standard“ (1.7 oder 2.0) legt fest, welche
-  Version die Seite beansprucht (siehe Abschnitt Standard 2.0). Es setzt Reviewer-Name und Datum
-  voraus; ohne beide wird das Speichern abgelehnt.
+  Version die Seite beansprucht (siehe Abschnitt Standard 2.0). Ohne Reviewer-Name und Datum lehnt
+  Contao das Speichern ab.
 
 Darunter beliebig viele, per Drag & Drop sortierbare **Abschnitte**. Der gewählte Abschnittstyp
 schaltet die passenden Eingabefelder frei:
@@ -61,9 +61,12 @@ schaltet die passenden Eingabefelder frei:
 | Quellen         | Titel · URL (+ Identifikatoren: Bezeichnung · Wert) |
 | Weiterführende Literatur | Titel · URL                                |
 
-Die Reihenfolge der Abschnitte ist frei (Standard v1.6.1: empfohlen, nicht verpflichtend).
+Die Reihenfolge der Abschnitte ist frei (seit Standard v1.6.1 nur empfohlen).
 „Weiterführende Literatur" gehört in den unteren Seitenbereich und darf vor oder nach FAQ und
-Quellen stehen. Klassifikationsangaben erscheinen kompakt im Seitenkopf, nicht als eigener Abschnitt.
+Quellen stehen. Klassifikationsangaben stehen kompakt im Seitenkopf.
+
+Den Seitenkopf (Name, Definition, Abgrenzung, Governance) rendert das Bundle aus den Kopfdaten des
+Datensatzes.
 
 ### Menschliches Review und Standardversion
 
@@ -77,10 +80,10 @@ v1.6.1-Seite, ohne Hinweis und ohne Platzhalter.
   Deploy oder automatische Prüfungen.
 - Inhaltliche Änderungen an Fakten brauchen vor der Veröffentlichung ein neues Review. Tippfehler,
   Layout und Umformulierungen ohne neue Fakten zählen nicht dazu.
-- Wird eine Organisation genannt, muss die prüfende Person intern nachvollziehbar bleiben (die
+- Nennst du eine Organisation, muss die prüfende Person intern nachvollziehbar bleiben (die
   Contao-Versionierung zeigt, wer das Review gespeichert hat).
 - „Zuletzt aktualisiert“ (früher „Zuletzt geprüft“) ist das Datum der letzten inhaltlichen Änderung
-  und wird als `dateModified` ausgegeben. Es ist kein Review-Datum und wird nie in eines umgewandelt.
+  und erscheint im JSON-LD als `dateModified`. Das Bundle verwendet es nie als Review-Datum.
 
 **Hinweise zum Upgrade (Standard v1.7)**
 
@@ -92,14 +95,11 @@ v1.6.1-Seite, ohne Hinweis und ohne Platzhalter.
   `REVIEWED_VERSION` oder `versionFor(bool)` verwenden. Der Sprachschlüssel
   `grounding.detail.standardTextVerified` ist veraltet (Alias von `standardTextUpdated`).
 
-Der Seitenkopf (Name, Definition, Abgrenzung, Governance) wird immer aus den Kopfdaten gerendert —
-er ist kein eigener Abschnitt.
-
 ### Standard 2.0 (Referenzintegrität)
 
 Standard 2.0 übernimmt v1.7 als Teil A (Seitenqualität) und ergänzt Teil B (Referenzintegrität,
-RI-1 bis RI-7). Das Bundle entscheidet je Seite, welche Version sie nennt. **Es wird nichts
-automatisch hochgestuft.**
+RI-1 bis RI-7). Das Bundle entscheidet je Seite, welche Version sie nennt, und **stuft keine
+Seite automatisch hoch.**
 
 | Standard | Bedingung                                                                                          |
 | -------- | -------------------------------------------------------------------------------------------------- |
@@ -108,17 +108,17 @@ automatisch hochgestuft.**
 | 2.0      | Review vorhanden, „Geprüft nach Standard“ = `2.0` **und** alle Referenzprüfungen bestanden.        |
 
 Bestehende Datensätze bleiben deshalb ohne Datenänderung 1.7 bzw. 1.6.1. Besteht eine 2.0-Seite zur
-Laufzeit eine Prüfung nicht, wird sie auf 1.7 herabgestuft und eine Warnung ins Contao-Log
-geschrieben (Datensatz und Verstöße; höchstens einmal täglich je Seite und Verstoß-Kombination, über
-den Pool `cache.app`). Die Seite behauptet also nie fälschlich 2.0. Auf 2.0-Seiten
-ist der Hinweis für menschliche Leser ausgeblendet.
+Laufzeit eine Prüfung nicht, stuft das Bundle sie auf 1.7 herab und schreibt eine Warnung ins
+Contao-Log (Entitätsname, Seiten-URL und Verstöße; höchstens einmal täglich je Seite und
+Verstoß-Kombination, über den Pool `cache.app`). Auf 2.0-Seiten blendet das Bundle den Hinweis für
+menschliche Leser aus.
 
 **Entity-Identifier und Referenzseite**
 
 - **Entity-Identifier** (`entityId`): absolute, stabile URI der Entität, dient als `@id` der
   Hauptentität. Leer heißt automatisch: Anker-URL (bzw. Seiten-URL) plus Typ-Fragment
-  (`#organization`, `#person`, `#softwareapplication`, bei `Thing` `#entity`). Internationalisierte
-  URLs (Umlaute, IDN-Hosts) werden akzeptiert.
+  (`#organization`, `#person`, `#softwareapplication`, bei `Thing` `#entity`). URLs mit Umlauten
+  und IDN-Hosts sind erlaubt.
 - **Referenzseite (Anker)** (`anchorUrl`): URL der Seite, die die Entität maßgeblich beschreibt, in
   der Sprache des Datensatzes. Leer heißt: diese Seite ist der Anker. `mainEntityOfPage` zeigt auf den
   Anker; Seiten, die nicht der Anker sind (`isAnchor` ist false), zeigen einen sichtbaren Link
@@ -133,15 +133,15 @@ ist der Hinweis für menschliche Leser ausgeblendet.
   (`<Basis-URL der Startseite>#organization`, bei einer Person `#person`). Dieselbe Entität hat dann
   website-weit eine `@id`.
 - Gespeicherte Werte, die keine absoluten http(s)-URLs sind (z. B. per Import oder SQL an der
-  Speicherprüfung vorbei), werden beim Rendern ignoriert (automatischer Rückfall), und eine geprüfte
-  2.0-Seite wird auf 1.7 herabgestuft.
+  Speicherprüfung vorbei), ignoriert das Bundle beim Rendern und nutzt den automatischen Wert. Eine
+  geprüfte 2.0-Seite stuft es dann auf 1.7 herab.
 
-**`sameAs`-Regeln (RI-3)** — nur offizielle Profile, Einträge in Identitätsregistern (Wikidata, ISNI,
-ORCID, GND, LEI, Handelsregister) oder Nachschlagewerk-Einträge speziell zu dieser Entität. Eine URL
-wird abgelehnt, wenn sie
+**`sameAs`-Regeln (RI-3).** Erlaubt sind offizielle Profile, Einträge in Identitätsregistern (Wikidata, ISNI,
+ORCID, GND, LEI, Handelsregister) oder Nachschlagewerk-Einträge speziell zu dieser Entität. Das Bundle
+lehnt eine URL ab, wenn sie
 
 1. keine absolute http(s)-URL ist,
-2. auf die eigene Domain zeigt (`www.` und Subdomains werden normalisiert). Eigene Hosts beim
+2. auf die eigene Domain zeigt (`www.` und Subdomains zählen dazu). Eigene Hosts beim
    Speichern: die Hosts von `entityId` und `anchorUrl` sowie die Domains (DNS) aller Startseiten. Beim
    Rendern: die Hosts von Seiten-URL, Entity-Identifier und Anker,
 3. eine Such-, Listen- oder API-URL ist (`/search`, `/api/`, `api.php`, `Special:Search` oder eine
@@ -150,18 +150,18 @@ wird abgelehnt, wenn sie
 5. ein Fragment hat (Abschnitt eines fremden Eintrags).
 
 Bei einem Datensatz mit „Geprüft nach Standard 2.0“ **blockiert** ein Verstoß das Speichern, mit einer
-Meldung je URL und Grund. Sonst (1.7 oder ohne Review) zeigt dieselbe Prüfung nur einen Hinweis. Ob ein
-Profil wirklich offiziell ist, entscheidet weiterhin das Review; es gibt weder Allowlist noch
-Erreichbarkeitsprüfung. Werte, die keine http(s)-URLs sind, werden aus dem JSON-LD und dem sichtbaren
-Block entfernt, und eine geprüfte 2.0-Seite mit so einem Wert wird zur Laufzeit auf 1.7 herabgestuft.
+Meldung je URL und Grund. Bei 1.7 oder ohne Review zeigt Contao denselben Text als Hinweis und speichert. Ob ein
+Profil offiziell ist, entscheidet das Review; das Bundle kennt keine Allowlist und prüft keine
+Erreichbarkeit. Werte, die keine http(s)-URLs sind, entfernt das Bundle aus dem JSON-LD und dem
+sichtbaren Block und stuft eine geprüfte 2.0-Seite mit so einem Wert zur Laufzeit auf 1.7 herab.
 
-**Offizielle Profile und Kennungen.** Jede `sameAs`-URL und jede Kennung der Hauptentität steht im
-sichtbaren Block „Offizielle Profile und Kennungen von …“ direkt vor dem Standard-Footer (RI-4).
+**Offizielle Profile und Kennungen.** Das Bundle zeigt jede `sameAs`-URL und jede Kennung der
+Hauptentität im sichtbaren Block „Offizielle Profile und Kennungen von …“ vor dem Standard-Footer (RI-4).
 `sameAs`-URLs erscheinen als Links, Kennungen als Bezeichnung/Wert-Liste. Die Sektion „Quellen“
-enthält nur noch Quellen (Standardüberschrift „Quellen zu …“), damit offizielle Profile von Berichten
-Dritter unterscheidbar bleiben (RI-5). Im JSON-LD stehen Nicht-URL-Kennungen als `identifier`
+enthält nur Quellen (Standardüberschrift „Quellen zu …“). So unterscheiden Leser offizielle Profile von
+Berichten Dritter (RI-5). Im JSON-LD stehen Nicht-URL-Kennungen als `identifier`
 (`PropertyValue` mit `propertyID` und `value`) statt in `additionalProperty`; das gilt für alle
-Versionen. Standardüberschriften tragen jetzt den Entitätsnamen (P-3): „Abgrenzung von …“, „Quellen
+Versionen. Standardüberschriften tragen den Entitätsnamen (P-3): „Abgrenzung von …“, „Quellen
 zu …“, „Änderungen an …“, „Stabile Begriffe zu …“, „Häufige Fragen zu …“.
 
 **Upgrade 1.7 → 2.0 für Redaktionen**
@@ -201,11 +201,11 @@ zu …“, „Änderungen an …“, „Stabile Begriffe zu …“, „Häufige 
 
 1. In einem beliebigen Artikel ein Inhaltselement vom Typ **„Grounding Page"** (Gruppe *Includes*)
    einfügen und den gewünschten Grounding-Datensatz auswählen.
-2. Die Seite gibt die komplette Grounding Page im normalen Layout aus (Header, Human-Notice,
-   Abschnitte, Standard-Footer). Das JSON-LD landet automatisch im `<head>`, ebenso `canonical`,
-   Meta-Description und `hreflang` aus dem Contao-Layout.
+2. Die Seite gibt die komplette Grounding Page im normalen Layout aus (Header, Hinweis für
+   menschliche Leser bis Standard 1.7, Abschnitte, Profile-Block, Standard-Footer). Das JSON-LD
+   steht im `<head>`, ebenso `canonical`, Meta-Description und `hreflang` aus dem Contao-Layout.
 
-Für eine **dedizierte Faktenseite** legst du einfach eine normale Contao-Seite an (z. B.
+Für eine **dedizierte Faktenseite** legst du eine normale Contao-Seite an (z. B.
 `/fakten/<name>`) und platzierst dort dieses eine Element.
 
 ## Mehrsprachigkeit
@@ -217,29 +217,30 @@ bestimmt `inLanguage`; die `hreflang`-Verknüpfung liefert Contao über die Spra
 ## JSON-LD (schema.org)
 
 Pro Seite entsteht **ein** Graph mit einer `WebPage`, deren `mainEntity` die aufgelöste Haupt-Entität
-ist (z. B. `Organization`, `Person`, `Product`). `sameAs`, Fakten (`additionalProperty`), `DefinedTerm`-
-und `FAQPage`-Knoten werden aus den Abschnitten erzeugt. Quellen erscheinen als `citation`, weiterführende
+ist (z. B. `Organization`, `Person`, `Product`). Aus den Abschnitten erzeugt das Bundle `sameAs`,
+Fakten (`additionalProperty`), `identifier` sowie `DefinedTerm`- und `FAQPage`-Knoten. Quellen erscheinen als `citation`, weiterführende
 Literatur als `relatedLink` an der `WebPage`. Eine geprüfte Seite trägt zusätzlich
 `reviewedBy` (`Person` oder `Organization`) und `lastReviewed`. `datePublished` spiegelt das
 Veröffentlichungsdatum neben `dateCreated`. Die Klassifikation wird typgerecht gespiegelt
 (`areaServed`/`spatialCoverage`, `parentOrganization`/`isPartOf`), sonst als `PropertyValue`. Segment
-und Beziehungen stehen als `PropertyValue` in `additionalProperty`. Die Ausgabe erfolgt über Contaos
-ResponseContext, sodass das `<script type="application/ld+json">` im `<head>` steht — auch wenn das
-Element mitten im Seiteninhalt platziert ist. Prüfbar mit dem Schema.org Validiator.
+und Beziehungen stehen als `PropertyValue` in `additionalProperty`. Das Bundle schreibt über Contaos
+ResponseContext, deshalb steht das `<script type="application/ld+json">` im `<head>`, auch wenn das
+Element mitten im Seiteninhalt sitzt. Prüfen kannst du die Ausgabe mit dem
+[Schema.org Validator](https://validator.schema.org/).
 
 ## Erweiterbarkeit
 
-- **Beliebiger `@type` ad hoc:** das Kopf-Feld *Eigener schema.org-Typ* füllen — es hat Vorrang vor
-  der Standard-Zuordnung, und der passende schema.org-Knoten wird erzeugt (sonst `Thing`).
+- **Beliebiger `@type` ad hoc:** das Kopf-Feld *Eigener schema.org-Typ* füllen. Es hat Vorrang vor
+  der Standard-Zuordnung, und das Bundle erzeugt den passenden schema.org-Knoten (sonst `Thing`).
 - **Neue Ontologie-Klasse:** einen Fall in `src/Enum/GroundingEntityType.php` samt Zuordnung zu einem
-  schema.org-Typ ergänzen — er steht danach automatisch im Backend zur Auswahl und im JSON-LD.
+  schema.org-Typ ergänzen. Backend-Auswahl und JSON-LD übernehmen ihn ohne weitere Änderung.
 
 ## Gestaltung
 
 Das mitgelieferte CSS (`public/grounding.css`) nutzt Bootstrap-CSS-Variablen (`--bs-*`) mit
-neutralen Fallback-Werten und übernimmt daher automatisch die Farben deines Themes. Alle Klassen
-sind mit `grounding-page` präfixiert und lassen sich im Theme überschreiben. Die Twig-Templates
-liegen unter `contao/templates/grounding/` und können projektspezifisch überschrieben werden.
+neutralen Fallback-Werten und übernimmt so die Farben deines Themes. Alle Klassen
+tragen das Präfix `grounding-page`; du überschreibst sie im Theme. Die Twig-Templates liegen unter
+`contao/templates/grounding/`, eigene Fassungen legst du im Projekt an.
 
 ## Barrierefreiheit (WCAG 2.x AA / BFSG)
 
@@ -257,9 +258,9 @@ Einzeln: `composer ecs` (Auto-Fix), `composer phpstan`, `composer rector`, `comp
 
 ## Entstehung
 
-Dieses Bundle wurde mit KI-Unterstützung (Claude von Anthropic) geplant und erstellt:
-Spezifikation, Implementierung, Tests und Dokumentation entstanden in Zusammenarbeit mit Claude
-und wurden von einem Menschen geprüft.
+Andreas van Hulst hat dieses Bundle mit KI-Unterstützung (Claude von Anthropic) geplant und gebaut.
+Spezifikation, Implementierung, Tests und Dokumentation sind in Zusammenarbeit mit Claude entstanden;
+ein Mensch hat sie geprüft.
 
 ## Lizenz
 
