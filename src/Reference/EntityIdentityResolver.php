@@ -16,16 +16,19 @@ final class EntityIdentityResolver
     public function resolve(GroundingPageDto $dto, string $pageUrl): EntityIdentity
     {
         $pageUrl = self::stripQueryAndFragment($pageUrl);
-        $anchorUrl = '' !== $dto->anchorUrl ? $dto->anchorUrl : $pageUrl;
-        $entityId = '' !== $dto->entityId
+
+        // Gespeicherte Werte am Save-Callback vorbei (SQL, Import) nie ungeprüft in
+        // href oder @id übernehmen: ungültig = leer = Automatik.
+        $anchorUrl = self::stripQueryAndFragment(SameAsPolicy::isAbsoluteHttpUrl($dto->anchorUrl) ? $dto->anchorUrl : $pageUrl);
+        $entityId = SameAsPolicy::isAbsoluteHttpUrl($dto->entityId)
             ? $dto->entityId
-            : self::stripQueryAndFragment($anchorUrl).self::fragmentFor($dto->schemaType);
+            : $anchorUrl.self::fragmentFor($dto->schemaType);
 
         return new EntityIdentity(
             pageUrl: $pageUrl,
             entityId: $entityId,
             anchorUrl: $anchorUrl,
-            isAnchor: self::stripQueryAndFragment($anchorUrl) === $pageUrl,
+            isAnchor: $anchorUrl === $pageUrl,
         );
     }
 

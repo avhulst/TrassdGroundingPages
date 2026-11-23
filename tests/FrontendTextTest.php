@@ -32,8 +32,9 @@ class FrontendTextTest extends TestCase
         foreach (['distinctionNamed', 'sourcesNamed', 'changelogNamed', 'definedTermsNamed', 'faqNamed', 'officialProfiles', 'anchorLink'] as $key) {
             $this->assertStringContainsString('%s', $GLOBALS['TL_LANG']['grounding']['detail'][$key], $key);
         }
-        // Alte Schlüssel bleiben unverändert und ohne Platzhalter, damit Overrides
-        // mit trans([]) keinen wörtlichen "%s" ausgeben.
+
+        // Alte Schlüssel bleiben unverändert und ohne Platzhalter, damit Overrides mit
+        // trans([]) keinen wörtlichen "%s" ausgeben.
         foreach (['distinction', 'sources', 'changelog', 'definedTerms', 'faq'] as $key) {
             $this->assertStringNotContainsString('%', $GLOBALS['TL_LANG']['grounding']['detail'][$key], $key);
         }

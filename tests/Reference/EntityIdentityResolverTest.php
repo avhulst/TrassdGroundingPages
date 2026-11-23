@@ -85,4 +85,51 @@ class EntityIdentityResolverTest extends TestCase
 
         $this->assertTrue($identity->isAnchor);
     }
+
+    /**
+     * @return iterable<string, array{string}>
+     */
+    public static function invalidStoredUrlProvider(): iterable
+    {
+        yield 'javascript' => ['javascript:alert(1)'];
+        yield 'relative' => ['/about/'];
+        yield 'fragment' => ['#organization'];
+        yield 'ftp' => ['ftp://example.com/about/'];
+    }
+
+    #[DataProvider('invalidStoredUrlProvider')]
+    public function testInvalidStoredEntityIdFallsBackToAutomaticIdentifier(string $value): void
+    {
+        $identity = (new EntityIdentityResolver())->resolve(
+            new GroundingPageDto(name: 'CERN', schemaType: 'Organization', entityId: $value),
+            'https://example.com/cern',
+        );
+
+        $this->assertSame('https://example.com/cern#organization', $identity->entityId);
+    }
+
+    #[DataProvider('invalidStoredUrlProvider')]
+    public function testInvalidStoredAnchorUrlFallsBackToPageUrl(string $value): void
+    {
+        $identity = (new EntityIdentityResolver())->resolve(
+            new GroundingPageDto(name: 'CERN', schemaType: 'Organization', anchorUrl: $value),
+            'https://example.com/cern',
+        );
+
+        $this->assertSame('https://example.com/cern', $identity->anchorUrl);
+        $this->assertSame('https://example.com/cern#organization', $identity->entityId);
+        $this->assertTrue($identity->isAnchor);
+    }
+
+    public function testAnchorUrlIsReturnedWithoutQueryAndFragment(): void
+    {
+        $identity = (new EntityIdentityResolver())->resolve(
+            new GroundingPageDto(name: 'CERN', schemaType: 'Organization', anchorUrl: 'https://example.com/about/?utm_source=x#team'),
+            'https://example.com/facts/cern',
+        );
+
+        $this->assertSame('https://example.com/about/', $identity->anchorUrl);
+        $this->assertSame('https://example.com/about/#organization', $identity->entityId);
+        $this->assertFalse($identity->isAnchor);
+    }
 }

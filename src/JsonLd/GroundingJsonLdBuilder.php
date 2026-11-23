@@ -143,7 +143,7 @@ final readonly class GroundingJsonLdBuilder
         $used = [];
         [$termKey, $definitionKey] = SectionRowSchema::DefinedTerms->columns();
 
-        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->definedTerms) as $term) {
+        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->definedTerms) as $index => $term) {
             if ('' === ($term[$termKey] ?? '')) {
                 continue;
             }
@@ -151,11 +151,18 @@ final readonly class GroundingJsonLdBuilder
             $node = Schema::definedTerm()->name($term[$termKey]);
             $node->description($term[$definitionKey] ?? '');
 
-            // Stabile Anker-ID aus dem Begriff; Duplikate erhalten einen Index-Suffix.
+            // Stabile Anker-ID aus dem Begriff; Duplikate erhalten einen Zähler-Suffix, bis
+            // die ID frei ist (auch gegenüber Begriffen wie "A-1"). Ohne Slug "n<Index>",
+            // damit kein Begriff "0" kollidiert.
             $slug = $slugger->slug($term[$termKey])->lower()->toString();
-            $slug = '' !== $slug ? $slug : (string) \count($nodes);
-            $id = isset($used[$slug]) ? $slug.'-'.$used[$slug] : $slug;
-            $used[$slug] = ($used[$slug] ?? 0) + 1;
+            $base = '' !== $slug ? $slug : 'n'.$index;
+            $id = $base;
+
+            for ($suffix = 1; isset($used[$id]); ++$suffix) {
+                $id = $base.'-'.$suffix;
+            }
+
+            $used[$id] = true;
             $node->setProperty('@id', $identity->pageUrl.'#term-'.$id);
             $nodes[] = $node;
         }

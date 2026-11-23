@@ -90,6 +90,36 @@ class ConformanceResolverTest extends TestCase
         $this->assertSame(['entityId'], $result->violations);
     }
 
+    public function testInvalidStoredEntityIdDowngradesEvenThoughIdentityFallsBack(): void
+    {
+        $dto = new GroundingPageDto(name: 'CERN', schemaType: 'Organization', reviewerName: 'Jane Doe', lastReviewed: '2026-11-20', reviewStandard: '2.0', entityId: 'javascript:alert(1)');
+
+        $result = $this->resolve($dto);
+
+        $this->assertSame('1.7', $result->version);
+        $this->assertSame(['entityId'], $result->violations);
+    }
+
+    public function testInvalidStoredAnchorUrlDowngrades(): void
+    {
+        $dto = new GroundingPageDto(name: 'CERN', schemaType: 'Organization', reviewerName: 'Jane Doe', lastReviewed: '2026-11-20', reviewStandard: '2.0', anchorUrl: '/about/');
+
+        $result = $this->resolve($dto);
+
+        $this->assertSame('1.7', $result->version);
+        $this->assertSame(['anchorUrl'], $result->violations);
+    }
+
+    public function testRelativeStoredAndResolvedEntityIdIsReportedOnce(): void
+    {
+        $dto = new GroundingPageDto(name: 'CERN', schemaType: 'Organization', reviewerName: 'Jane Doe', lastReviewed: '2026-11-20', reviewStandard: '2.0', entityId: '#organization');
+        $identity = new EntityIdentity('https://example.com/cern', '#organization', 'https://example.com/cern', true);
+
+        $result = (new ConformanceResolver(new SameAsPolicy()))->resolve($dto, $identity);
+
+        $this->assertSame(['entityId'], $result->violations);
+    }
+
     /**
      * @param list<string> $sameAs
      */

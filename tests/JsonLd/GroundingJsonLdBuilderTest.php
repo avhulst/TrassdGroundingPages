@@ -83,6 +83,39 @@ class GroundingJsonLdBuilderTest extends TestCase
         $this->assertSame(['https://example.com/cern#term-grosse', 'https://example.com/cern#term-grosse-1'], $ids);
     }
 
+    public function testSuffixedSlugNeverCollidesWithLiteralTerm(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sections: [
+            new GroundingSectionDto(sectionType: 'defined-terms', definedTerms: [
+                ['term' => 'A', 'definition' => 'a'],
+                ['term' => 'A', 'definition' => 'b'],
+                ['term' => 'A-1', 'definition' => 'c'],
+            ]),
+        ]);
+
+        $ids = array_map(static fn ($term): string => $term->toArray()['@id'], $this->builder()->buildDefinedTerms($dto, $this->identity()));
+
+        $this->assertSame(['https://example.com/cern#term-a', 'https://example.com/cern#term-a-1', 'https://example.com/cern#term-a-1-1'], $ids);
+    }
+
+    public function testEmptySlugFallbackDoesNotCollideWithNumericTerm(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sections: [
+            new GroundingSectionDto(sectionType: 'defined-terms', definedTerms: [
+                ['term' => '0', 'definition' => 'Null'],
+                ['term' => '!!!', 'definition' => 'Kein Slug'],
+                ['term' => '?', 'definition' => 'Kein Slug'],
+            ]),
+        ]);
+
+        $ids = array_map(static fn ($term): string => $term->toArray()['@id'], $this->builder()->buildDefinedTerms($dto, $this->identity()));
+
+        $this->assertCount(3, array_unique($ids));
+        $this->assertSame('https://example.com/cern#term-0', $ids[0]);
+        $this->assertSame('https://example.com/cern#term-n1', $ids[1]);
+        $this->assertSame('https://example.com/cern#term-n2', $ids[2]);
+    }
+
     public function testParentWithUrlBecomesNodeWithId(): void
     {
         $dto = new GroundingPageDto(name: 'X', schemaType: 'Organization', parentEntity: 'Mutter AG', parentEntityUrl: 'https://mutter.example/about/#organization');

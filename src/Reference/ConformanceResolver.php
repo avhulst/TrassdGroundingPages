@@ -36,8 +36,14 @@ final readonly class ConformanceResolver
 
         $violations = [];
 
-        if (!SameAsPolicy::isAbsoluteHttpUrl($identity->entityId)) {
+        // Ungültige Rohwerte ignoriert der EntityIdentityResolver; die Seite darf dann
+        // trotzdem nicht 2.0 nennen.
+        if (!SameAsPolicy::isAbsoluteHttpUrl($identity->entityId) || self::isInvalidStoredUrl($dto->entityId)) {
             $violations[] = 'entityId';
+        }
+
+        if (self::isInvalidStoredUrl($dto->anchorUrl)) {
+            $violations[] = 'anchorUrl';
         }
 
         $ownHosts = array_values(array_filter(array_map(
@@ -59,5 +65,10 @@ final readonly class ConformanceResolver
         );
 
         return new ConformanceResult(GroundingStandard::REVIEWED_VERSION, $violations);
+    }
+
+    private static function isInvalidStoredUrl(string $value): bool
+    {
+        return '' !== $value && !SameAsPolicy::isAbsoluteHttpUrl($value);
     }
 }
