@@ -29,7 +29,7 @@ final readonly class ReferenceFieldsListener
         private OwnHostsProvider $ownHosts,
         private TranslatorInterface $translator,
         private ContaoFramework $framework,
-        private Connection|null $connection = null,
+        private Connection $connection,
     ) {
     }
 
@@ -89,13 +89,15 @@ final readonly class ReferenceFieldsListener
         foreach (StringUtil::deserialize($value, true) as $row) {
             $candidate = \is_array($row) ? trim((string) ($row['value'] ?? '')) : '';
 
-            if (str_starts_with($candidate, 'http://') || str_starts_with($candidate, 'https://')) {
+            // Schema case-insensitiv wie im DTO (sameAsUrls), sonst entgeht
+            // HTTPS://… der Prüfung.
+            if (1 === preg_match('#^https?://#i', $candidate)) {
                 $urls[] = $candidate;
             }
         }
 
         $pid = (int) ($dc->getCurrentRecord()['pid'] ?? 0);
-        $parent = $pid > 0 && null !== $this->connection
+        $parent = $pid > 0
             ? $this->connection->fetchAssociative('SELECT reviewStandard, entityId, anchorUrl FROM tl_grounding_page WHERE id = ?', [$pid])
             : false;
 
