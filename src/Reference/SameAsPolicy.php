@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Trassd\Contao\GroundingPages\Reference;
 
+use Contao\Idna;
+
 /*
  * RI-3 (Standard 2.0): sameAs nur für offizielle Profile, Registereinträge und
  * Nachschlagewerk-Einträge zur Entität. Geprüft werden nur maschinell erkennbare
@@ -72,11 +74,13 @@ final class SameAsPolicy
 
     public static function isAbsoluteHttpUrl(string $url): bool
     {
-        if (false === filter_var($url, FILTER_VALIDATE_URL)) {
+        $ascii = self::toAscii($url);
+
+        if (null === $ascii || false === filter_var($ascii, FILTER_VALIDATE_URL)) {
             return false;
         }
 
-        return \in_array(strtolower((string) parse_url($url, PHP_URL_SCHEME)), ['http', 'https'], true);
+        return \in_array(strtolower((string) parse_url($ascii, PHP_URL_SCHEME)), ['http', 'https'], true);
     }
 
     public static function hostOf(string $url): string|null
@@ -84,6 +88,27 @@ final class SameAsPolicy
         $host = parse_url($url, PHP_URL_HOST);
 
         return \is_string($host) && '' !== $host ? self::normaliseHost($host) : null;
+    }
+
+    /**
+     * FILTER_VALIDATE_URL kennt nur ASCII: Host per IDNA in Punycode wandeln, übrige
+     * Nicht-ASCII-Bytes in Pfad, Query und Fragment prozentcodieren.
+     */
+    private static function toAscii(string $url): string|null
+    {
+        $host = parse_url($url, PHP_URL_HOST);
+
+        if (\is_string($host) && 1 === preg_match('/[^\x00-\x7F]/', $host)) {
+            $encoded = Idna::encode($host);
+
+            if ('' === $encoded) {
+                return null;
+            }
+
+            $url = preg_replace('/'.preg_quote($host, '/').'/', $encoded, $url, 1) ?? $url;
+        }
+
+        return preg_replace_callback('/[^\x00-\x7F]+/', static fn (array $m): string => rawurlencode($m[0]), $url);
     }
 
     private static function normaliseHost(string $host): string

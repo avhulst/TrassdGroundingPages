@@ -64,6 +64,14 @@ class ConformanceResolverTest extends TestCase
         $this->assertSame('1.7', $result->version);
     }
 
+    public function testInternationalisedSameAsStaysV2(): void
+    {
+        $result = $this->resolve($this->reviewed('2.0', ['https://de.wikipedia.org/wiki/Müller']));
+
+        $this->assertSame('2.0', $result->version);
+        $this->assertSame([], $result->violations);
+    }
+
     public function testNonHttpSameAsDowngradesEvenThoughProfilesDropIt(): void
     {
         $result = $this->resolve($this->reviewed('2.0', ['foo']));

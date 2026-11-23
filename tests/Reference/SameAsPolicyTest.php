@@ -23,6 +23,9 @@ class SameAsPolicyTest extends TestCase
         yield 'orcid' => ['https://orcid.org/0000-0002-1825-0097', null];
         yield 'gnd' => ['https://d-nb.info/gnd/2005698-4', null];
         yield 'research path is no search' => ['https://ror.org/research-group', null];
+        yield 'umlaut path' => ['https://de.wikipedia.org/wiki/Müller', null];
+        yield 'umlaut host' => ['https://bücher.de/x', null];
+        yield 'whitespace' => ['https://a b', SameAsViolation::NotHttp];
         yield 'ftp' => ['ftp://example.org/file', SameAsViolation::NotHttp];
         yield 'relative' => ['/about/', SameAsViolation::NotHttp];
         yield 'empty' => ['', SameAsViolation::NotHttp];
@@ -65,6 +68,9 @@ class SameAsPolicyTest extends TestCase
     public function testIsAbsoluteHttpUrl(): void
     {
         $this->assertTrue(SameAsPolicy::isAbsoluteHttpUrl('https://example.com/about/#organization'));
+        $this->assertTrue(SameAsPolicy::isAbsoluteHttpUrl('https://de.wikipedia.org/wiki/Müller'));
+        $this->assertTrue(SameAsPolicy::isAbsoluteHttpUrl('https://bücher.de/x'));
+        $this->assertFalse(SameAsPolicy::isAbsoluteHttpUrl('https://a b'));
         $this->assertFalse(SameAsPolicy::isAbsoluteHttpUrl('#organization'));
         $this->assertFalse(SameAsPolicy::isAbsoluteHttpUrl('mailto:a@example.com'));
         $this->assertFalse(SameAsPolicy::isAbsoluteHttpUrl(''));
