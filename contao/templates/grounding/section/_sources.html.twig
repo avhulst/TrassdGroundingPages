@@ -1,6 +1,6 @@
 {# Kennungen stehen seit Standard 2.0 in _official_profiles (RI-5); section.identifiers bleibt für Overrides im DTO. #}
 <section class="grounding-page grounding-page__sources">
-    <h2>{{ section.sectionTitle ?: 'grounding.detail.sources'|trans([name|default('')], 'contao_default') }}</h2>
+    <h2>{{ section.sectionTitle ?: 'grounding.detail.sourcesNamed'|trans([name|default('')], 'contao_default') }}</h2>
 
     {% if section.sources %}
         <ul class="grounding-page__source-list">

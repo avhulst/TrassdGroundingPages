@@ -52,4 +52,14 @@ class StandardFooterTemplateTest extends TwigTemplateTestCase
         $this->assertMatchesRegularExpression('/grounding\.detail\.standardTextUpdated\[.*\|1\.6\.1\|2026-10-08\]/s', $html);
         $this->assertStringNotContainsString('standardTextVerified', $html);
     }
+
+    public function testDateModifiedIsEscapedInRawFooterText(): void
+    {
+        $html = $this->render('@Contao/grounding/_page.html.twig', [
+            'grounding' => new GroundingPageDto(name: 'CERN', schemaType: 'Organization', dateModified: '<b>x</b>'),
+        ]);
+
+        $this->assertStringNotContainsString('<b>x</b>', $html);
+        $this->assertStringContainsString('&lt;b&gt;x&lt;/b&gt;', $html);
+    }
 }

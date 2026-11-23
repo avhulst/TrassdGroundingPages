@@ -44,7 +44,7 @@ class OfficialProfilesTemplateTest extends TwigTemplateTestCase
         ]);
 
         $this->assertStringNotContainsString('Mitgliedstaaten', $html);
-        $this->assertStringContainsString('grounding.detail.sources[CERN]', $html);
+        $this->assertStringContainsString('grounding.detail.sourcesNamed[CERN]', $html);
         $this->assertStringContainsString('href="https://example.org/quelle"', $html);
     }
 
@@ -71,7 +71,36 @@ class OfficialProfilesTemplateTest extends TwigTemplateTestCase
     {
         $html = $this->renderPage(new GroundingPageDto(name: 'CERN', schemaType: 'Organization', distinction: 'Nicht das Kernkraftwerk.'));
 
-        $this->assertStringContainsString('grounding.detail.distinction[CERN]', $html);
+        $this->assertStringContainsString('grounding.detail.distinctionNamed[CERN]', $html);
+    }
+
+    public function testSectionDefaultHeadingsNameTheEntity(): void
+    {
+        $html = $this->renderPage(new GroundingPageDto(
+            name: 'CERN',
+            schemaType: 'Organization',
+            changelog: [['date' => '2026-11-01', 'change' => 'Angelegt']],
+            sections: [
+                new GroundingSectionDto(sectionType: 'faq', faq: [['question' => 'F?', 'answer' => 'A.']]),
+                new GroundingSectionDto(sectionType: 'defined-terms', definedTerms: [['term' => 'LHC', 'definition' => 'Beschleuniger']]),
+                new GroundingSectionDto(sectionType: 'sources', sources: [['title' => 'Quelle', 'url' => 'https://example.org/quelle']]),
+            ],
+        ));
+
+        $this->assertStringContainsString('<h2>grounding.detail.faqNamed[CERN]</h2>', $html);
+        $this->assertStringContainsString('<h2>grounding.detail.definedTermsNamed[CERN]</h2>', $html);
+        $this->assertStringContainsString('<h2>grounding.detail.sourcesNamed[CERN]</h2>', $html);
+        $this->assertStringContainsString('<h2>grounding.detail.changelogNamed[CERN]</h2>', $html);
+    }
+
+    public function testSectionPartialsRenderWithoutName(): void
+    {
+        // Overrides von _page, die name nicht übergeben, dürfen nicht brechen.
+        $html = $this->render('@Contao/grounding/section/_faq.html.twig', [
+            'section' => new GroundingSectionDto(sectionType: 'faq', faq: [['question' => 'F?', 'answer' => 'A.']]),
+        ]);
+
+        $this->assertStringContainsString('grounding.detail.faqNamed[]', $html);
     }
 
     public function testFooterShowsResolvedV2Version(): void

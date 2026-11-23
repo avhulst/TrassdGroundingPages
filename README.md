@@ -149,7 +149,7 @@ section now contains only sources (default heading “Sources about …”), so 
 distinguishable from third-party reports (RI-5). In JSON-LD, non-URL identifiers are emitted as
 `identifier` (`PropertyValue` with `propertyID` and `value`) instead of `additionalProperty`; this
 applies to all versions. Standard headings now carry the entity name (P-3): “Distinguishing …”,
-“Sources about …”, “Changes to …”.
+“Sources about …”, “Changes to …”, “Defined Terms for …”, “Frequently Asked Questions about …”.
 
 **Upgrade 1.7 → 2.0 for editors**
 
@@ -170,8 +170,10 @@ applies to all versions. Standard headings now carry the entity name (P-3): “D
   and `conformance` (stated `version`, violations).
 - Overridden footers should call `grounding_standard(grounding.isReviewed, conformance.version)`.
   With only `grounding.isReviewed` a template states at most 1.7, never 2.0.
-- The translation keys `grounding.detail.distinction`, `sources` and `changelog` now take `%s` (the
-  entity name). New keys: `officialProfiles`, `anchorLink`.
+- The bundle templates use new translation keys with `%s` (the entity name): `distinctionNamed`,
+  `sourcesNamed`, `changelogNamed`, `definedTermsNamed`, `faqNamed`, `officialProfiles` and
+  `anchorLink` (all under `grounding.detail`). The old keys `distinction`, `sources`, `changelog`,
+  `definedTerms` and `faq` are unchanged, so overrides calling them with `trans([])` keep working.
 - Identifiers moved from `_sources.html.twig` to `_official_profiles.html.twig`. The block is a
   `<section>` child of the page wrapper, placed before the standard footer. Overridden `_sources`
   templates keep working (`section.identifiers` remains in the DTO) but should no longer print

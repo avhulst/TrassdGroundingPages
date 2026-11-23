@@ -10,9 +10,9 @@
         {% elseif section.sectionType == 'timeline' %}
             {% include "@Contao/grounding/section/_timeline.html.twig" with { section: section } only %}
         {% elseif section.sectionType == 'defined-terms' %}
-            {% include "@Contao/grounding/section/_defined_terms.html.twig" with { section: section } only %}
+            {% include "@Contao/grounding/section/_defined_terms.html.twig" with { section: section, name: grounding.name } only %}
         {% elseif section.sectionType == 'faq' %}
-            {% include "@Contao/grounding/section/_faq.html.twig" with { section: section } only %}
+            {% include "@Contao/grounding/section/_faq.html.twig" with { section: section, name: grounding.name } only %}
         {% elseif section.sectionType == 'sources' %}
             {% include "@Contao/grounding/section/_sources.html.twig" with { section: section, name: grounding.name } only %}
         {% elseif section.sectionType == 'further-reading' %}

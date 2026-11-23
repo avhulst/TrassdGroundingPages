@@ -152,7 +152,7 @@ enthält nur noch Quellen (Standardüberschrift „Quellen zu …“), damit off
 Dritter unterscheidbar bleiben (RI-5). Im JSON-LD stehen Nicht-URL-Kennungen als `identifier`
 (`PropertyValue` mit `propertyID` und `value`) statt in `additionalProperty`; das gilt für alle
 Versionen. Standardüberschriften tragen jetzt den Entitätsnamen (P-3): „Abgrenzung von …“, „Quellen
-zu …“, „Änderungen an …“.
+zu …“, „Änderungen an …“, „Stabile Begriffe zu …“, „Häufige Fragen zu …“.
 
 **Upgrade 1.7 → 2.0 für Redaktionen**
 
@@ -174,8 +174,11 @@ zu …“, „Änderungen an …“.
   `isAnchor`) und `conformance` (genannte `version`, Verstöße).
 - Überschriebene Footer rufen `grounding_standard(grounding.isReviewed, conformance.version)` auf. Mit
   nur `grounding.isReviewed` nennt ein Template höchstens 1.7, nie 2.0.
-- Die Übersetzungsschlüssel `grounding.detail.distinction`, `sources` und `changelog` haben jetzt `%s`
-  (Entitätsname). Neu: `officialProfiles`, `anchorLink`.
+- Die Bundle-Templates nutzen neue Übersetzungsschlüssel mit `%s` (Entitätsname): `distinctionNamed`,
+  `sourcesNamed`, `changelogNamed`, `definedTermsNamed`, `faqNamed`, `officialProfiles` und
+  `anchorLink` (alle unter `grounding.detail`). Die alten Schlüssel `distinction`, `sources`,
+  `changelog`, `definedTerms` und `faq` bleiben unverändert, Overrides mit `trans([])` funktionieren
+  also weiter.
 - Kennungen sind von `_sources.html.twig` nach `_official_profiles.html.twig` gewandert. Der Block ist
   eine `<section>` direkt im Seiten-Wrapper vor dem Standard-Footer. Überschriebene `_sources`-Templates
   funktionieren weiter (`section.identifiers` bleibt im DTO), sollten Kennungen aber nicht mehr
