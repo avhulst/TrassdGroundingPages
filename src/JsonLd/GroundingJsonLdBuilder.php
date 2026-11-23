@@ -10,10 +10,12 @@ use Spatie\SchemaOrg\BaseType;
 use Spatie\SchemaOrg\Graph;
 use Spatie\SchemaOrg\Schema;
 use Spatie\SchemaOrg\WebPage;
+use Symfony\Component\String\Slugger\AsciiSlugger;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
 use Trassd\Contao\GroundingPages\Enum\ReviewerType;
 use Trassd\Contao\GroundingPages\Enum\SectionRowSchema;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentity;
 
 final readonly class GroundingJsonLdBuilder
 {
@@ -21,7 +23,7 @@ final readonly class GroundingJsonLdBuilder
     {
     }
 
-    public function addToResponseContext(GroundingPageDto $dto): void
+    public function addToResponseContext(GroundingPageDto $dto, EntityIdentity $identity): void
     {
         $context = $this->responseContextAccessor->getResponseContext();
 
@@ -33,14 +35,15 @@ final readonly class GroundingJsonLdBuilder
         // Standard-Identifier; wir überschreiben sie, sodass es genau eine WebPage pro
         // Seite gibt. collectFinalScriptFromGraphs() ruft der Core
         // (ContentCompositionBuilder) selbst auf.
-        $this->populate($context->get(JsonLdManager::class)->getGraphForSchema(JsonLdManager::SCHEMA_ORG), $dto);
+        $this->populate($context->get(JsonLdManager::class)->getGraphForSchema(JsonLdManager::SCHEMA_ORG), $dto, $identity);
     }
 
-    public function buildWebPage(GroundingPageDto $dto): WebPage
+    public function buildWebPage(GroundingPageDto $dto, EntityIdentity $identity): WebPage
     {
         $webPage = Schema::webPage();
-        $webPage->setProperty('@id', '#webpage');
-        $webPage->setProperty('mainEntity', ['@id' => '#main']);
+        $webPage->setProperty('@id', $identity->pageUrl);
+        $webPage->setProperty('url', $identity->pageUrl);
+        $webPage->setProperty('mainEntity', ['@id' => $identity->entityId]);
         $webPage->name($dto->name);
         $webPage->description($dto->definition);
         $webPage->inLanguage($dto->inLanguage);
@@ -86,18 +89,28 @@ final readonly class GroundingJsonLdBuilder
         return $webPage;
     }
 
-    public function buildMainEntity(GroundingPageDto $dto): BaseType
+    public function buildMainEntity(GroundingPageDto $dto, EntityIdentity $identity): BaseType
     {
         $main = $this->createMainType('' !== $dto->schemaType ? $dto->schemaType : 'Thing');
-        $main->setProperty('@id', '#main');
-        $main->setProperty('mainEntityOfPage', ['@id' => '#webpage']);
+        $main->setProperty('@id', $identity->entityId);
+        $main->setProperty('mainEntityOfPage', $identity->anchorUrl);
         $main->setProperty('name', $dto->name);
         $main->setProperty('description', $dto->definition);
 
-        $sameAs = $this->collectSameAs($dto);
+        $sameAs = $dto->sameAsUrls();
 
         if ([] !== $sameAs) {
             $main->setProperty('sameAs', $sameAs);
+        }
+
+        $identifiers = array_map(
+            static fn (array $row): array => ['@type' => 'PropertyValue', 'propertyID' => $row['label'], 'value' => $row['value']],
+            $dto->identifierValues(),
+        );
+
+        if ([] !== $identifiers) {
+            // Wrapper statt Array: spatie würde ein rohes `identifier` zu `@id` umdeuten.
+            $main->setProperty('identifier', new PropertyValueList($identifiers));
         }
 
         $classification = ClassificationPropertyMap::resolve($dto->schemaType, $dto->isCustomSchemaType);
@@ -106,7 +119,8 @@ final readonly class GroundingJsonLdBuilder
             $main->setProperty($classification['geographicScope'], $dto->geographicScope);
         }
 
-        if ('' !== $dto->parentEntity && null !== $classification['parentEntity']) {
+        // Eigener Knoten nur mit eigener @id (http(s)-URL), sonst PropertyValue.
+        if ('' !== $dto->parentEntity && null !== $classification['parentEntity'] && $this->isUrl($dto->parentEntityUrl)) {
             $main->setProperty($classification['parentEntity'], $this->buildParentNode($dto, $classification['parentEntity']));
         }
 
@@ -122,9 +136,11 @@ final readonly class GroundingJsonLdBuilder
     /**
      * @return list<BaseType>
      */
-    public function buildDefinedTerms(GroundingPageDto $dto): array
+    public function buildDefinedTerms(GroundingPageDto $dto, EntityIdentity $identity): array
     {
         $nodes = [];
+        $slugger = new AsciiSlugger();
+        $used = [];
         [$termKey, $definitionKey] = SectionRowSchema::DefinedTerms->columns();
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->definedTerms) as $term) {
@@ -134,13 +150,20 @@ final readonly class GroundingJsonLdBuilder
 
             $node = Schema::definedTerm()->name($term[$termKey]);
             $node->description($term[$definitionKey] ?? '');
+
+            // Stabile Anker-ID aus dem Begriff; Duplikate erhalten einen Index-Suffix.
+            $slug = $slugger->slug($term[$termKey])->lower()->toString();
+            $slug = '' !== $slug ? $slug : (string) \count($nodes);
+            $id = isset($used[$slug]) ? $slug.'-'.$used[$slug] : $slug;
+            $used[$slug] = ($used[$slug] ?? 0) + 1;
+            $node->setProperty('@id', $identity->pageUrl.'#term-'.$id);
             $nodes[] = $node;
         }
 
         return $nodes;
     }
 
-    public function buildFaq(GroundingPageDto $dto): BaseType|null
+    public function buildFaq(GroundingPageDto $dto, EntityIdentity $identity): BaseType|null
     {
         $questions = [];
         [$questionKey, $answerKey] = SectionRowSchema::Faq->columns();
@@ -160,19 +183,22 @@ final readonly class GroundingJsonLdBuilder
             return null;
         }
 
-        return Schema::fAQPage()->mainEntity($questions);
+        $faqPage = Schema::fAQPage()->mainEntity($questions);
+        $faqPage->setProperty('@id', $identity->pageUrl.'#faq');
+
+        return $faqPage;
     }
 
-    private function populate(Graph $graph, GroundingPageDto $dto): void
+    private function populate(Graph $graph, GroundingPageDto $dto, EntityIdentity $identity): void
     {
-        $graph->set($this->buildWebPage($dto));
-        $graph->set($this->buildMainEntity($dto), 'grounding-main');
+        $graph->set($this->buildWebPage($dto, $identity));
+        $graph->set($this->buildMainEntity($dto, $identity), 'grounding-main');
 
-        foreach ($this->buildDefinedTerms($dto) as $index => $term) {
+        foreach ($this->buildDefinedTerms($dto, $identity) as $index => $term) {
             $graph->set($term, 'grounding-term-'.$index);
         }
 
-        $faqPage = $this->buildFaq($dto);
+        $faqPage = $this->buildFaq($dto, $identity);
 
         if (null !== $faqPage) {
             $graph->set($faqPage, 'grounding-faq');
@@ -215,46 +241,17 @@ final readonly class GroundingJsonLdBuilder
     }
 
     /**
-     * @return list<string>
-     */
-    private function collectSameAs(GroundingPageDto $dto): array
-    {
-        $sameAs = $dto->sameAs;
-        [, $valueKey] = SectionRowSchema::Identifiers->columns();
-
-        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->identifiers) as $identifier) {
-            $value = $identifier[$valueKey] ?? '';
-
-            if ($this->isUrl($value)) {
-                $sameAs[] = $value;
-            }
-        }
-
-        return array_values(array_unique(array_filter($sameAs)));
-    }
-
-    /**
      * @return list<array<string, string>>
      */
     private function buildAdditionalProperties(GroundingPageDto $dto): array
     {
         $props = [];
         [$factLabelKey, $factValueKey] = SectionRowSchema::FactGrid->columns();
-        [$identifierLabelKey, $identifierValueKey] = SectionRowSchema::Identifiers->columns();
         [$yearKey, $eventKey] = SectionRowSchema::Timeline->columns();
 
         foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->factGrid) as $fact) {
             if ('' !== ($fact[$factLabelKey] ?? '') && '' !== ($fact[$factValueKey] ?? '')) {
                 $props[] = ['@type' => 'PropertyValue', 'name' => $fact[$factLabelKey], 'value' => $fact[$factValueKey]];
-            }
-        }
-
-        foreach ($this->collect($dto, static fn (GroundingSectionDto $section): array => $section->identifiers) as $identifier) {
-            $label = $identifier[$identifierLabelKey] ?? '';
-            $value = $identifier[$identifierValueKey] ?? '';
-
-            if ('' !== $label && '' !== $value && !$this->isUrl($value)) {
-                $props[] = ['@type' => 'PropertyValue', 'propertyID' => $label, 'name' => $label, 'value' => $value];
             }
         }
 
@@ -274,7 +271,7 @@ final readonly class GroundingJsonLdBuilder
             $props[] = ['@type' => 'PropertyValue', 'name' => 'geographicScope', 'value' => $dto->geographicScope];
         }
 
-        if ('' !== $dto->parentEntity && null === $classification['parentEntity']) {
+        if ('' !== $dto->parentEntity && (null === $classification['parentEntity'] || !$this->isUrl($dto->parentEntityUrl))) {
             $props[] = $this->propertyValue('parentEntity', $dto->parentEntity, $dto->parentEntityUrl);
         }
 
@@ -297,10 +294,8 @@ final readonly class GroundingJsonLdBuilder
     {
         $node = 'parentOrganization' === $property ? Schema::organization() : Schema::creativeWork();
         $node->name($dto->parentEntity);
-
-        if ($this->isUrl($dto->parentEntityUrl)) {
-            $node->url($dto->parentEntityUrl);
-        }
+        $node->setProperty('@id', $dto->parentEntityUrl);
+        $node->url($dto->parentEntityUrl);
 
         return $node;
     }

@@ -12,6 +12,7 @@ use PHPUnit\Framework\Attributes\DataProvider;
 use Symfony\Component\HttpFoundation\RequestStack;
 use Trassd\Contao\GroundingPages\Composer\GroundingPageComposer;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentity;
 
 /**
  * Mehrsprachigkeit über separate Sprachbäume: je Datensatz trägt das
@@ -55,7 +56,7 @@ class InLanguageTest extends ContaoTestCase
         $this->assertSame($language, $dto->inLanguage);
 
         $webPage = (new GroundingJsonLdBuilder(new ResponseContextAccessor(new RequestStack())))
-            ->buildWebPage($dto)
+            ->buildWebPage($dto, new EntityIdentity('https://example.com/p', 'https://example.com/p#thing', 'https://example.com/p', true))
             ->toArray()
         ;
 

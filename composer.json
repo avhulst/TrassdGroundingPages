@@ -19,6 +19,7 @@
         "symfony/dependency-injection": "^7.4",
         "symfony/http-foundation": "^7.4",
         "symfony/http-kernel": "^7.4",
+        "symfony/string": "^7.4",
         "symfony/translation-contracts": "^3.0",
         "twig/twig": "^3.0"
     },

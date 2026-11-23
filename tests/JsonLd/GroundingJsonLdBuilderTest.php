@@ -10,16 +10,18 @@ use Symfony\Component\HttpFoundation\RequestStack;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Dto\GroundingSectionDto;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentity;
 
 class GroundingJsonLdBuilderTest extends TestCase
 {
     public function testWebPageNodeCarriesHeaderAndMainEntityReference(): void
     {
-        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+        $web = $this->builder()->buildWebPage($this->sampleDto(), $this->identity())->toArray();
 
         $this->assertSame('WebPage', $web['@type']);
-        $this->assertSame('#webpage', $web['@id']);
-        $this->assertSame(['@id' => '#main'], $web['mainEntity']);
+        $this->assertSame('https://example.com/cern', $web['@id']);
+        $this->assertSame('https://example.com/cern', $web['url']);
+        $this->assertSame(['@id' => 'https://example.com/cern#organization'], $web['mainEntity']);
         $this->assertSame('CERN', $web['name']);
         $this->assertSame('de', $web['inLanguage']);
         $this->assertSame('2026-06-20', $web['dateModified']);
@@ -27,19 +29,83 @@ class GroundingJsonLdBuilderTest extends TestCase
         $this->assertSame('Grounding Page Editorial', $web['maintainer']['name']);
     }
 
-    public function testMainEntityTypeIdAndBackReference(): void
+    public function testMainEntityTypeIdAndAnchorReference(): void
     {
-        $main = $this->builder()->buildMainEntity($this->sampleDto())->toArray();
+        $main = $this->builder()->buildMainEntity($this->sampleDto(), $this->identity())->toArray();
 
         $this->assertSame('Organization', $main['@type']);
-        $this->assertSame('#main', $main['@id']);
-        $this->assertSame(['@id' => '#webpage'], $main['mainEntityOfPage']);
+        $this->assertSame('https://example.com/cern#organization', $main['@id']);
+        $this->assertSame('https://example.com/cern', $main['mainEntityOfPage']);
         $this->assertSame('CERN', $main['name']);
+    }
+
+    public function testNonAnchorPagePointsMainEntityOfPageToAnchor(): void
+    {
+        $identity = new EntityIdentity('https://example.com/facts/cern', 'https://example.com/about/#organization', 'https://example.com/about/', false);
+
+        $main = $this->builder()->buildMainEntity($this->sampleDto(), $identity)->toArray();
+        $web = $this->builder()->buildWebPage($this->sampleDto(), $identity)->toArray();
+
+        $this->assertSame('https://example.com/about/', $main['mainEntityOfPage']);
+        $this->assertSame('https://example.com/about/#organization', $main['@id']);
+        $this->assertSame('https://example.com/facts/cern', $web['@id']);
+    }
+
+    public function testNonUrlIdentifiersBecomeIdentifierPropertyValues(): void
+    {
+        $main = $this->builder()->buildMainEntity($this->sampleDto(), $this->identity())->toArray();
+
+        $this->assertSame([['@type' => 'PropertyValue', 'propertyID' => 'Mitgliedstaaten', 'value' => '25']], $main['identifier']);
+        $this->assertNotContains('Mitgliedstaaten', array_column($main['additionalProperty'], 'propertyID'));
+    }
+
+    public function testDefinedTermsAndFaqCarryAbsoluteIds(): void
+    {
+        $terms = $this->builder()->buildDefinedTerms($this->sampleDto(), $this->identity());
+        $faq = $this->builder()->buildFaq($this->sampleDto(), $this->identity());
+
+        $this->assertSame('https://example.com/cern#term-offenes-wissen', $terms[0]->toArray()['@id']);
+        $this->assertNotNull($faq);
+        $this->assertSame('https://example.com/cern#faq', $faq->toArray()['@id']);
+    }
+
+    public function testDuplicateTermSlugsGetIndexSuffix(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Thing', sections: [
+            new GroundingSectionDto(sectionType: 'defined-terms', definedTerms: [
+                ['term' => 'Größe', 'definition' => 'a'],
+                ['term' => 'grösse', 'definition' => 'b'],
+            ]),
+        ]);
+
+        $ids = array_map(static fn ($term): string => $term->toArray()['@id'], $this->builder()->buildDefinedTerms($dto, $this->identity()));
+
+        $this->assertSame(['https://example.com/cern#term-grosse', 'https://example.com/cern#term-grosse-1'], $ids);
+    }
+
+    public function testParentWithUrlBecomesNodeWithId(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Organization', parentEntity: 'Mutter AG', parentEntityUrl: 'https://mutter.example/about/#organization');
+
+        $main = $this->builder()->buildMainEntity($dto, $this->identity())->toArray();
+
+        $this->assertSame('https://mutter.example/about/#organization', $main['parentOrganization']['@id']);
+        $this->assertSame('Mutter AG', $main['parentOrganization']['name']);
+    }
+
+    public function testParentWithoutUrlIsOnlyAPropertyValue(): void
+    {
+        $dto = new GroundingPageDto(name: 'X', schemaType: 'Organization', parentEntity: 'Mutter AG');
+
+        $main = $this->builder()->buildMainEntity($dto, $this->identity())->toArray();
+
+        $this->assertArrayNotHasKey('parentOrganization', $main);
+        $this->assertContains(['@type' => 'PropertyValue', 'name' => 'parentEntity', 'value' => 'Mutter AG'], $main['additionalProperty']);
     }
 
     public function testUrlIdentifiersAndSameAsAreMergedAndDeduplicated(): void
     {
-        $main = $this->builder()->buildMainEntity($this->sampleDto())->toArray();
+        $main = $this->builder()->buildMainEntity($this->sampleDto(), $this->identity())->toArray();
 
         $this->assertContains('https://www.wikidata.org/wiki/Q42944', $main['sameAs']);
         $this->assertContains('https://ror.org/01ggx4157', $main['sameAs']);
@@ -48,7 +114,7 @@ class GroundingJsonLdBuilderTest extends TestCase
 
     public function testNonUrlDataBecomesAdditionalPropertyIncludingStatusAndVersion(): void
     {
-        $main = $this->builder()->buildMainEntity($this->sampleDto())->toArray();
+        $main = $this->builder()->buildMainEntity($this->sampleDto(), $this->identity())->toArray();
         $props = $main['additionalProperty'];
 
         $names = array_column($props, 'name', 'value');
@@ -59,12 +125,11 @@ class GroundingJsonLdBuilderTest extends TestCase
         $this->assertSame('1989', $names['WWW-Vorschlag']);
         $this->assertSame('status', $names['Active Definition']);
         $this->assertSame('version', $names['1.6']);
-        $this->assertContains('Mitgliedstaaten', array_column($props, 'propertyID'));
     }
 
     public function testDefinedTermsBecomeSeparateNodes(): void
     {
-        $terms = $this->builder()->buildDefinedTerms($this->sampleDto());
+        $terms = $this->builder()->buildDefinedTerms($this->sampleDto(), $this->identity());
 
         $this->assertCount(1, $terms);
         $this->assertSame('DefinedTerm', $terms[0]->toArray()['@type']);
@@ -73,7 +138,7 @@ class GroundingJsonLdBuilderTest extends TestCase
 
     public function testFaqBecomesFaqPageWithQuestions(): void
     {
-        $faq = $this->builder()->buildFaq($this->sampleDto());
+        $faq = $this->builder()->buildFaq($this->sampleDto(), $this->identity());
 
         $this->assertNotNull($faq);
         $array = $faq->toArray();
@@ -86,26 +151,26 @@ class GroundingJsonLdBuilderTest extends TestCase
     {
         $dto = new GroundingPageDto(name: 'X', schemaType: 'Organization');
 
-        $this->assertNull($this->builder()->buildFaq($dto));
+        $this->assertNull($this->builder()->buildFaq($dto, $this->identity()));
     }
 
     public function testCustomSchemaTypeProducesMatchingNodeType(): void
     {
         $dto = new GroundingPageDto(name: 'Klinik', schemaType: 'MedicalOrganization');
 
-        $this->assertSame('MedicalOrganization', $this->builder()->buildMainEntity($dto)->toArray()['@type']);
+        $this->assertSame('MedicalOrganization', $this->builder()->buildMainEntity($dto, $this->identity())->toArray()['@type']);
     }
 
     public function testUnknownSchemaTypeFallsBackToThing(): void
     {
         $dto = new GroundingPageDto(name: 'X', schemaType: 'DefinitelyNotASchemaType');
 
-        $this->assertSame('Thing', $this->builder()->buildMainEntity($dto)->toArray()['@type']);
+        $this->assertSame('Thing', $this->builder()->buildMainEntity($dto, $this->identity())->toArray()['@type']);
     }
 
     public function testSourcesBecomeCitationCreativeWorks(): void
     {
-        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+        $web = $this->builder()->buildWebPage($this->sampleDto(), $this->identity())->toArray();
 
         $this->assertSame(
             [['@type' => 'CreativeWork', 'name' => 'Website', 'url' => 'https://home.cern/']],
@@ -130,7 +195,7 @@ class GroundingJsonLdBuilderTest extends TestCase
                 ['@type' => 'CreativeWork', 'name' => 'https://nur-url/', 'url' => 'https://nur-url/'],
                 ['@type' => 'CreativeWork', 'name' => 'Böse'],
             ],
-            $this->builder()->buildWebPage($dto)->toArray()['citation'],
+            $this->builder()->buildWebPage($dto, $this->identity())->toArray()['citation'],
         );
     }
 
@@ -148,12 +213,12 @@ class GroundingJsonLdBuilderTest extends TestCase
             ]),
         ]);
 
-        $this->assertSame(['https://a/', 'http://b/'], $this->builder()->buildWebPage($dto)->toArray()['relatedLink']);
+        $this->assertSame(['https://a/', 'http://b/'], $this->builder()->buildWebPage($dto, $this->identity())->toArray()['relatedLink']);
     }
 
     public function testNoCitationOrRelatedLinkWithoutRows(): void
     {
-        $web = $this->builder()->buildWebPage(new GroundingPageDto(name: 'X', schemaType: 'Thing'))->toArray();
+        $web = $this->builder()->buildWebPage(new GroundingPageDto(name: 'X', schemaType: 'Thing'), $this->identity())->toArray();
 
         $this->assertArrayNotHasKey('citation', $web);
         $this->assertArrayNotHasKey('relatedLink', $web);
@@ -167,11 +232,12 @@ class GroundingJsonLdBuilderTest extends TestCase
             geographicScope: 'International',
             parentEntity: 'UNESCO',
             parentEntityUrl: 'https://www.unesco.org/',
-        ))->toArray();
+        ), $this->identity())->toArray();
 
         $this->assertSame('International', $main['areaServed']);
         $this->assertSame('Organization', $main['parentOrganization']['@type']);
         $this->assertSame('UNESCO', $main['parentOrganization']['name']);
+        $this->assertSame('https://www.unesco.org/', $main['parentOrganization']['@id']);
         $this->assertSame('https://www.unesco.org/', $main['parentOrganization']['url']);
         $this->assertArrayNotHasKey('additionalProperty', $main);
     }
@@ -183,12 +249,13 @@ class GroundingJsonLdBuilderTest extends TestCase
             schemaType: 'CreativeWork',
             geographicScope: 'Weltweit',
             parentEntity: 'Grounding Page Project',
-        ))->toArray();
+            parentEntityUrl: 'https://example.org/projekt/',
+        ), $this->identity())->toArray();
 
         $this->assertSame('Weltweit', $main['spatialCoverage']);
         $this->assertSame('CreativeWork', $main['isPartOf']['@type']);
         $this->assertSame('Grounding Page Project', $main['isPartOf']['name']);
-        $this->assertArrayNotHasKey('url', $main['isPartOf']);
+        $this->assertSame('https://example.org/projekt/', $main['isPartOf']['@id']);
     }
 
     public function testOtherAndCustomTypesFallBackToPropertyValues(): void
@@ -197,7 +264,7 @@ class GroundingJsonLdBuilderTest extends TestCase
             new GroundingPageDto(name: 'P', schemaType: 'Person', geographicScope: 'Hamburg', parentEntity: 'Firma', parentEntityUrl: 'https://firma/'),
             new GroundingPageDto(name: 'O', schemaType: 'Organization', geographicScope: 'Hamburg', parentEntity: 'Firma', parentEntityUrl: 'https://firma/', isCustomSchemaType: true),
         ] as $dto) {
-            $main = $this->builder()->buildMainEntity($dto)->toArray();
+            $main = $this->builder()->buildMainEntity($dto, $this->identity())->toArray();
 
             foreach (['areaServed', 'spatialCoverage', 'parentOrganization', 'isPartOf'] as $typed) {
                 $this->assertArrayNotHasKey($typed, $main, $dto->schemaType);
@@ -217,9 +284,10 @@ class GroundingJsonLdBuilderTest extends TestCase
             schemaType: 'Organization',
             parentEntity: 'UNESCO',
             parentEntityUrl: 'javascript:alert(1)',
-        ))->toArray();
+        ), $this->identity())->toArray();
 
-        $this->assertArrayNotHasKey('url', $main['parentOrganization']);
+        $this->assertArrayNotHasKey('parentOrganization', $main);
+        $this->assertContains(['@type' => 'PropertyValue', 'name' => 'parentEntity', 'value' => 'UNESCO'], $main['additionalProperty']);
     }
 
     public function testSegmentAndRelationshipsBecomePropertyValues(): void
@@ -232,7 +300,7 @@ class GroundingJsonLdBuilderTest extends TestCase
                 ['relation' => 'Betreibt', 'name' => 'LHC', 'url' => 'https://home.cern/lhc'],
                 ['relation' => 'Partner', 'name' => 'Y', 'url' => 'javascript:alert(1)'],
             ],
-        ))->toArray();
+        ), $this->identity())->toArray();
 
         $props = array_column($main['additionalProperty'], null, 'name');
 
@@ -246,7 +314,7 @@ class GroundingJsonLdBuilderTest extends TestCase
 
     public function testNoClassificationOutputWhenEmpty(): void
     {
-        $main = $this->builder()->buildMainEntity(new GroundingPageDto(name: 'X', schemaType: 'Organization'))->toArray();
+        $main = $this->builder()->buildMainEntity(new GroundingPageDto(name: 'X', schemaType: 'Organization'), $this->identity())->toArray();
 
         foreach (['areaServed', 'parentOrganization', 'additionalProperty'] as $key) {
             $this->assertArrayNotHasKey($key, $main);
@@ -255,7 +323,7 @@ class GroundingJsonLdBuilderTest extends TestCase
 
     public function testWebPageCarriesDatePublishedNextToDateCreated(): void
     {
-        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+        $web = $this->builder()->buildWebPage($this->sampleDto(), $this->identity())->toArray();
 
         $this->assertSame('1954-09-29', $web['dateCreated']);
         $this->assertSame('1954-09-29', $web['datePublished']);
@@ -263,7 +331,7 @@ class GroundingJsonLdBuilderTest extends TestCase
 
     public function testUnreviewedPageHasNoReviewProperties(): void
     {
-        $web = $this->builder()->buildWebPage($this->sampleDto())->toArray();
+        $web = $this->builder()->buildWebPage($this->sampleDto(), $this->identity())->toArray();
 
         $this->assertArrayNotHasKey('reviewedBy', $web);
         $this->assertArrayNotHasKey('lastReviewed', $web);
@@ -277,7 +345,7 @@ class GroundingJsonLdBuilderTest extends TestCase
             dateModified: '2026-10-01',
             reviewerName: 'Jane Doe',
             lastReviewed: '2026-10-02',
-        ))->toArray();
+        ), $this->identity())->toArray();
 
         $this->assertSame('2026-10-02', $web['lastReviewed']);
         $this->assertSame('2026-10-01', $web['dateModified']);
@@ -293,7 +361,7 @@ class GroundingJsonLdBuilderTest extends TestCase
             reviewerType: 'organization',
             reviewerName: 'Example Editorial Team',
             lastReviewed: '2026-10-02',
-        ))->toArray();
+        ), $this->identity())->toArray();
 
         $this->assertSame('Organization', $web['reviewedBy']['@type']);
         $this->assertSame('Example Editorial Team', $web['reviewedBy']['name']);
@@ -307,7 +375,7 @@ class GroundingJsonLdBuilderTest extends TestCase
             reviewerType: 'team',
             reviewerName: 'Jane Doe',
             lastReviewed: '2026-10-02',
-        ))->toArray();
+        ), $this->identity())->toArray();
 
         $this->assertSame('Person', $web['reviewedBy']['@type']);
     }
@@ -318,10 +386,20 @@ class GroundingJsonLdBuilderTest extends TestCase
             name: 'X',
             schemaType: 'Thing',
             reviewerName: 'Jane Doe',
-        ))->toArray();
+        ), $this->identity())->toArray();
 
         $this->assertArrayNotHasKey('reviewedBy', $web);
         $this->assertArrayNotHasKey('lastReviewed', $web);
+    }
+
+    private function identity(): EntityIdentity
+    {
+        return new EntityIdentity(
+            pageUrl: 'https://example.com/cern',
+            entityId: 'https://example.com/cern#organization',
+            anchorUrl: 'https://example.com/cern',
+            isAnchor: true,
+        );
     }
 
     private function builder(): GroundingJsonLdBuilder

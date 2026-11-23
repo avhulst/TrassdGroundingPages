@@ -14,6 +14,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Trassd\Contao\GroundingPages\Composer\GroundingPageComposer;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentityResolver;
 
 #[AsContentElement(type: 'grounding_page', category: 'includes', template: 'content_element/grounding_page')]
 class GroundingPageController extends AbstractContentElementController
@@ -34,7 +35,10 @@ class GroundingPageController extends AbstractContentElementController
         }
 
         $dto = $this->composer->compose($page);
-        $this->jsonLdBuilder->addToResponseContext($dto);
+        $this->jsonLdBuilder->addToResponseContext(
+            $dto,
+            (new EntityIdentityResolver())->resolve($dto, $request->getSchemeAndHttpHost().$request->getPathInfo()),
+        );
 
         $template->set('grounding', $dto);
 
