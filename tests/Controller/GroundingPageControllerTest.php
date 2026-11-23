@@ -6,12 +6,16 @@ namespace Trassd\Contao\GroundingPages\Tests\Controller;
 
 use Contao\ContentModel;
 use Contao\CoreBundle\Routing\ContentUrlGenerator;
+use Contao\CoreBundle\Routing\PageFinder;
 use Contao\CoreBundle\Routing\ResponseContext\ResponseContextAccessor;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\GroundingPageModel;
+use Contao\PageModel;
 use Contao\TestCase\ContaoTestCase;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Exception\RouteNotFoundException;
+use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Trassd\Contao\GroundingPages\Composer\GroundingPageComposer;
 use Trassd\Contao\GroundingPages\Controller\ContentElement\GroundingPageController;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
@@ -57,19 +61,62 @@ class GroundingPageControllerTest extends ContaoTestCase
 
     public function testPageUrlFallsBackToRequestWithoutQuery(): void
     {
+        $request = Request::create('https://example.com/cern?page_n=2');
+
+        $this->assertSame('https://example.com/cern', $this->pageUrl($request, null, $this->createStub(ContentUrlGenerator::class)));
+    }
+
+    public function testPageUrlUsesGeneratedUrlOfCurrentPageWithoutQueryAndFragment(): void
+    {
+        $page = $this->createClassWithPropertiesStub(PageModel::class, ['id' => 5]);
+        $request = Request::create('https://example.com/cern?page_n=2');
+
+        $generator = $this->createMock(ContentUrlGenerator::class);
+        $generator
+            ->expects($this->once())
+            ->method('generate')
+            ->with($page, [], UrlGeneratorInterface::ABSOLUTE_URL)
+            ->willReturn('https://www.example.com/de/cern?x=1#top')
+        ;
+
+        $this->assertSame('https://www.example.com/de/cern', $this->pageUrl($request, $page, $generator));
+    }
+
+    public function testPageUrlFallsBackToRequestWhenPageHasNoRoute(): void
+    {
+        $page = $this->createClassWithPropertiesStub(PageModel::class, ['id' => 5]);
+        $request = Request::create('https://example.com/cern');
+
+        $generator = $this->createStub(ContentUrlGenerator::class);
+        $generator
+            ->method('generate')
+            ->willThrowException(new RouteNotFoundException('No route'))
+        ;
+
+        $this->assertSame('https://example.com/cern', $this->pageUrl($request, $page, $generator));
+    }
+
+    private function pageUrl(Request $request, PageModel|null $page, ContentUrlGenerator $generator): string
+    {
+        $pageFinder = $this->createMock(PageFinder::class);
+        $pageFinder
+            ->expects($this->once())
+            ->method('getCurrentPage')
+            ->with($request)
+            ->willReturn($page)
+        ;
+
         $controller = new GroundingPageController(
             $this->createContaoFrameworkStub(),
             new GroundingPageComposer(),
             new GroundingJsonLdBuilder($this->createStub(ResponseContextAccessor::class)),
             new EntityIdentityResolver(),
             new ConformanceResolver(new SameAsPolicy()),
-            $this->createStub(ContentUrlGenerator::class),
+            $generator,
+            $pageFinder,
         );
 
-        $request = Request::create('https://example.com/cern?page_n=2');
-        $url = (new \ReflectionMethod($controller, 'pageUrl'))->invoke($controller, $request);
-
-        $this->assertSame('https://example.com/cern', $url);
+        return (new \ReflectionMethod($controller, 'pageUrl'))->invoke($controller, $request);
     }
 
     private function invokeGetResponse(object $adapter, ResponseContextAccessor $accessor, FragmentTemplate $template): Response
@@ -82,6 +129,7 @@ class GroundingPageControllerTest extends ContaoTestCase
             new EntityIdentityResolver(),
             new ConformanceResolver(new SameAsPolicy()),
             $this->createStub(ContentUrlGenerator::class),
+            $this->createStub(PageFinder::class),
         );
         $model = $this->createClassWithPropertiesStub(ContentModel::class, ['groundingPage' => 42]);
 

@@ -6,6 +6,7 @@ namespace Trassd\Contao\GroundingPages\Tests\Reference;
 
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Component\Cache\Adapter\ArrayAdapter;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\Reference\ConformanceResolver;
 use Trassd\Contao\GroundingPages\Reference\ConformanceResult;
@@ -118,6 +119,50 @@ class ConformanceResolverTest extends TestCase
         $result = (new ConformanceResolver(new SameAsPolicy()))->resolve($dto, $identity);
 
         $this->assertSame(['entityId'], $result->violations);
+    }
+
+    public function testSameFailingPageIsLoggedOnlyOnceWithCache(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger
+            ->expects($this->once())
+            ->method('warning')
+        ;
+
+        $resolver = new ConformanceResolver(new SameAsPolicy(), $logger, new ArrayAdapter());
+        $identity = new EntityIdentity('https://example.com/cern', 'https://example.com/cern#organization', 'https://example.com/cern', true);
+        $dto = $this->reviewed('2.0', ['https://www.example.com/about/']);
+
+        $this->assertSame('1.7', $resolver->resolve($dto, $identity)->version);
+        $this->assertSame('1.7', $resolver->resolve($dto, $identity)->version);
+    }
+
+    public function testChangedViolationsAreLoggedAgain(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger
+            ->expects($this->exactly(2))
+            ->method('warning')
+        ;
+
+        $resolver = new ConformanceResolver(new SameAsPolicy(), $logger, new ArrayAdapter());
+        $identity = new EntityIdentity('https://example.com/cern', 'https://example.com/cern#organization', 'https://example.com/cern', true);
+
+        $resolver->resolve($this->reviewed('2.0', ['https://www.example.com/about/']), $identity);
+        $resolver->resolve($this->reviewed('2.0', ['foo']), $identity);
+    }
+
+    public function testWithoutCacheEveryRenderLogs(): void
+    {
+        $logger = $this->createMock(LoggerInterface::class);
+        $logger
+            ->expects($this->exactly(2))
+            ->method('warning')
+        ;
+
+        $dto = $this->reviewed('2.0', ['foo']);
+        $this->resolve($dto, $logger);
+        $this->resolve($dto, $logger);
     }
 
     /**

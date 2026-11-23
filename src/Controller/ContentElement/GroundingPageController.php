@@ -9,10 +9,12 @@ use Contao\CoreBundle\Controller\ContentElement\AbstractContentElementController
 use Contao\CoreBundle\DependencyInjection\Attribute\AsContentElement;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\CoreBundle\Routing\ContentUrlGenerator;
+use Contao\CoreBundle\Routing\PageFinder;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\GroundingPageModel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Routing\Exception\ExceptionInterface as RoutingException;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
 use Trassd\Contao\GroundingPages\Composer\GroundingPageComposer;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
@@ -29,6 +31,7 @@ class GroundingPageController extends AbstractContentElementController
         private readonly EntityIdentityResolver $identityResolver,
         private readonly ConformanceResolver $conformanceResolver,
         private readonly ContentUrlGenerator $urlGenerator,
+        private readonly PageFinder $pageFinder,
     ) {
     }
 
@@ -64,15 +67,16 @@ class GroundingPageController extends AbstractContentElementController
      */
     protected function pageUrl(Request $request): string
     {
-        $pageModel = isset($this->container) ? $this->getPageModel() : null;
+        $pageModel = $this->pageFinder->getCurrentPage($request);
 
         if (null !== $pageModel) {
             try {
                 return EntityIdentityResolver::stripQueryAndFragment(
                     $this->urlGenerator->generate($pageModel, [], UrlGeneratorInterface::ABSOLUTE_URL),
                 );
-            } catch (\Throwable) {
-                // Fallback unten, z. B. für Seiten ohne routbare URL.
+            } catch (RoutingException) {
+                // ContentUrlGenerator::generate() wirft nur Routing-Exceptions (z. B.
+                // RouteNotFoundException für Seiten ohne routbare URL): Fallback unten.
             }
         }
 

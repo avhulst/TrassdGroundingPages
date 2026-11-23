@@ -7,6 +7,8 @@ namespace Trassd\Contao\GroundingPages\Reference;
 use Contao\CoreBundle\Monolog\ContaoContext;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Contracts\Cache\CacheInterface;
+use Symfony\Contracts\Cache\ItemInterface;
 use Trassd\Contao\GroundingPages\Dto\GroundingPageDto;
 use Trassd\Contao\GroundingPages\GroundingStandard;
 
@@ -21,6 +23,8 @@ final readonly class ConformanceResolver
         private SameAsPolicy $policy,
         #[Autowire(service: 'monolog.logger.contao.error')]
         private LoggerInterface|null $logger = null,
+        #[Autowire(service: 'cache.app')]
+        private CacheInterface|null $cache = null,
     ) {
     }
 
@@ -59,12 +63,47 @@ final readonly class ConformanceResolver
             return new ConformanceResult(GroundingStandard::V2_VERSION);
         }
 
-        $this->logger?->warning(
-            \sprintf('Grounding Page "%s" (%s) is reviewed against standard 2.0 but fails reference integrity: %s. Stating 1.7.', $dto->name, $identity->pageUrl, implode(', ', $violations)),
-            ['contao' => new ContaoContext(__METHOD__, ContaoContext::ERROR)],
-        );
+        $this->logOnce($dto, $identity, $violations);
 
         return new ConformanceResult(GroundingStandard::REVIEWED_VERSION, $violations);
+    }
+
+    /**
+     * Jeder Frontend-Aufruf würde sonst einen tl_log-Eintrag schreiben: dieselbe
+     * Seite mit denselben Verstößen nur einmal pro Tag melden.
+     *
+     * @param list<string> $violations
+     */
+    private function logOnce(GroundingPageDto $dto, EntityIdentity $identity, array $violations): void
+    {
+        $logger = $this->logger;
+
+        if (null === $logger) {
+            return;
+        }
+
+        $log = static function () use ($logger, $dto, $identity, $violations): void {
+            $logger->warning(
+                \sprintf('Grounding Page "%s" (%s) is reviewed against standard 2.0 but fails reference integrity: %s. Stating 1.7.', $dto->name, $identity->pageUrl, implode(', ', $violations)),
+                ['contao' => new ContaoContext(self::class.'::resolve', ContaoContext::ERROR)],
+            );
+        };
+
+        if (null === $this->cache) {
+            $log();
+
+            return;
+        }
+
+        $this->cache->get(
+            'trassd_grounding_conformance_'.sha1($identity->pageUrl.'|'.implode(',', $violations)),
+            static function (ItemInterface $item) use ($log): bool {
+                $item->expiresAfter(86400);
+                $log();
+
+                return true;
+            },
+        );
     }
 
     private static function isInvalidStoredUrl(string $value): bool
