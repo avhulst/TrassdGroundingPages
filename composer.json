@@ -12,7 +12,9 @@
     "require": {
         "php": "^8.3",
         "ext-ctype": "*",
+        "ext-filter": "*",
         "contao/core-bundle": "^5.7",
+        "psr/log": "^3.0",
         "spatie/schema-org": "^3.10 || ^4.0",
         "symfony/dependency-injection": "^7.4",
         "symfony/http-foundation": "^7.4",
