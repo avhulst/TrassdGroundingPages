@@ -6,7 +6,7 @@ $GLOBALS['TL_LANG']['tl_grounding_section']['section_legend'] = 'Abschnitt';
 $GLOBALS['TL_LANG']['tl_grounding_section']['publish_legend'] = 'Veröffentlichung';
 
 $GLOBALS['TL_LANG']['tl_grounding_section']['sectionType'] = ['Abschnittstyp', 'Bestimmt Art und Eingabefelder des Abschnitts.'];
-$GLOBALS['TL_LANG']['tl_grounding_section']['sectionTitle'] = ['Überschrift', 'Sichtbare Überschrift dieses Abschnitts (optional).'];
+$GLOBALS['TL_LANG']['tl_grounding_section']['sectionTitle'] = ['Überschrift', 'Sichtbare Überschrift dieses Abschnitts (optional). Entitätsnamen in die Überschrift aufnehmen (Standard 2.0, P-3). Leer = Standardüberschrift mit Namen.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['factGrid'] = ['Faktentabelle', 'Zeilen aus Bezeichnung und Wert.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['timelineItems'] = ['Zeitleiste', 'Zeilen aus Jahr und Ereignis.'];
 $GLOBALS['TL_LANG']['tl_grounding_section']['definedTerms'] = ['Begriffe', 'Zeilen aus Begriff und Definition.'];

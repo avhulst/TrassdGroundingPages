@@ -1,0 +1,25 @@
+{# Standard 2.0, RI-4/RI-5: jedes sameAs und jede Kennung sichtbar, getrennt von Berichten Dritter. #}
+{%- set profiles = grounding.officialProfiles -%}
+{%- set identifiers = grounding.identifierValues -%}
+{% if profiles or identifiers %}
+    <section class="grounding-page grounding-page__profiles">
+        <h2>{{ 'grounding.detail.officialProfiles'|trans([grounding.name], 'contao_default') }}</h2>
+
+        {% if profiles %}
+            <ul class="grounding-page__profile-list">
+                {% for profile in profiles %}
+                    <li>{% if profile.label %}{{ profile.label }}: {% endif %}<a href="{{ profile.url }}" rel="noopener">{{ profile.url }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endif %}
+
+        {% if identifiers %}
+            <dl class="data-grid">
+                {% for id in identifiers %}
+                    <dt>{{ id.label }}</dt>
+                    <dd>{{ id.value }}</dd>
+                {% endfor %}
+            </dl>
+        {% endif %}
+    </section>
+{% endif %}

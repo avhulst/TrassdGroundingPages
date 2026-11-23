@@ -155,3 +155,22 @@
         gap: .1rem;
     }
 }
+
+.grounding-page__profile-list {
+    list-style: none;
+    margin: 0 0 1rem;
+    padding: 0;
+}
+
+.grounding-page__profile-list li + li {
+    margin-top: .25rem;
+}
+
+.grounding-page__profile-list a {
+    overflow-wrap: anywhere;
+}
+
+.grounding-page__anchor-link {
+    margin: .5rem 0 1rem;
+    font-weight: 600;
+}

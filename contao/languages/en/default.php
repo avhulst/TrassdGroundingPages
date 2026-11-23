@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-$GLOBALS['TL_LANG']['grounding']['detail']['distinction'] = 'Distinction';
+$GLOBALS['TL_LANG']['grounding']['detail']['distinction'] = 'Distinguishing %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['definedTerms'] = 'Defined Terms';
-$GLOBALS['TL_LANG']['grounding']['detail']['sources'] = 'Sources & Trust Signals';
+$GLOBALS['TL_LANG']['grounding']['detail']['sources'] = 'Sources about %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['identifiers'] = 'Identifiers';
 $GLOBALS['TL_LANG']['grounding']['detail']['verified'] = 'Last updated';
 $GLOBALS['TL_LANG']['grounding']['detail']['status'] = 'Status';
@@ -15,8 +15,10 @@ $GLOBALS['TL_LANG']['grounding']['detail']['publisher'] = 'Publisher';
 $GLOBALS['TL_LANG']['grounding']['detail']['maintainer'] = 'Maintainer';
 $GLOBALS['TL_LANG']['grounding']['detail']['version'] = 'Version';
 $GLOBALS['TL_LANG']['grounding']['detail']['published'] = 'Published';
-$GLOBALS['TL_LANG']['grounding']['detail']['changelog'] = 'Changelog';
+$GLOBALS['TL_LANG']['grounding']['detail']['changelog'] = 'Changes to %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['reportCorrection'] = 'Report a correction:';
+$GLOBALS['TL_LANG']['grounding']['detail']['officialProfiles'] = 'Official profiles and identifiers of %s';
+$GLOBALS['TL_LANG']['grounding']['detail']['anchorLink'] = 'Official information on %s';
 $GLOBALS['TL_LANG']['grounding']['detail']['faq'] = 'Frequently Asked Questions';
 $GLOBALS['TL_LANG']['grounding']['detail']['furtherReading'] = 'Further reading on %1$s';
 $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment'] = '%1$s operates in the %2$s segment.';

@@ -24,7 +24,7 @@ abstract class TwigTemplateTestCase extends TestCase
         $loader = new FilesystemLoader();
         $loader->addPath(\dirname(__DIR__, 2).'/contao/templates', 'Contao');
 
-        $twig = new Environment($loader, ['autoescape' => 'html']);
+        $twig = new Environment($loader, ['autoescape' => 'html', 'strict_variables' => true]);
         $twig->addExtension(new GroundingStandardExtension());
         $twig->addFilter(new TwigFilter(
             'trans',

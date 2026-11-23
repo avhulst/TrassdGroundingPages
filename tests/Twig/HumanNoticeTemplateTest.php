@@ -22,6 +22,15 @@ class HumanNoticeTemplateTest extends TwigTemplateTestCase
         $this->assertStringNotContainsString('grounding-page__human-notice', $html);
     }
 
+    public function testV2PageWithHiddenNoticeRendersNoHumanNotice(): void
+    {
+        $dto = (new GroundingPageDto(name: 'CERN', schemaType: 'Organization'))->withHumanNotice(false);
+
+        $html = $this->render('@Contao/grounding/section/_entity_header.html.twig', ['grounding' => $dto]);
+
+        $this->assertStringNotContainsString('grounding-page__human-notice', $html);
+    }
+
     private function header(GroundingPageDto $dto): string
     {
         return $this->render('@Contao/grounding/section/_entity_header.html.twig', ['grounding' => $dto]);

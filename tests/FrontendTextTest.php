@@ -27,6 +27,10 @@ class FrontendTextTest extends TestCase
 
         $this->assertNotEmpty($GLOBALS['TL_LANG']['grounding']['detail']['distinction']);
         $this->assertNotEmpty($GLOBALS['TL_LANG']['grounding']['detail']['faq']);
+
+        foreach (['distinction', 'sources', 'changelog', 'officialProfiles', 'anchorLink'] as $key) {
+            $this->assertStringContainsString('%s', $GLOBALS['TL_LANG']['grounding']['detail'][$key], $key);
+        }
         // Contao-Translator nutzt vsprintf → positionale Specifier (%1$s), keine
         // %name%-Platzhalter.
         $this->assertStringContainsString('%1$s', $GLOBALS['TL_LANG']['grounding']['detail']['segmentAssignment']);

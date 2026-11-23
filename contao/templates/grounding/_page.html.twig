@@ -1,6 +1,8 @@
+{%- set identity = identity|default(null) -%}
+{%- set conformance = conformance|default(null) -%}
 <div class="grounding-page-wrapper">
     {# Header immer aus den Kopfdaten (ADR 0002), nicht an einen Abschnitt gebunden. #}
-    {% include "@Contao/grounding/section/_entity_header.html.twig" with { grounding: grounding } only %}
+    {% include "@Contao/grounding/section/_entity_header.html.twig" with { grounding: grounding, identity: identity } only %}
 
     {% for section in grounding.sections %}
         {% if section.sectionType == 'fact-grid' %}
@@ -12,11 +14,13 @@
         {% elseif section.sectionType == 'faq' %}
             {% include "@Contao/grounding/section/_faq.html.twig" with { section: section } only %}
         {% elseif section.sectionType == 'sources' %}
-            {% include "@Contao/grounding/section/_sources.html.twig" with { section: section } only %}
+            {% include "@Contao/grounding/section/_sources.html.twig" with { section: section, name: grounding.name } only %}
         {% elseif section.sectionType == 'further-reading' %}
             {% include "@Contao/grounding/section/_further_reading.html.twig" with { section: section, name: grounding.name } only %}
         {% endif %}
     {% endfor %}
 
-    {% include "@Contao/grounding/_standard_footer.html.twig" with { grounding: grounding } only %}
+    {% include "@Contao/grounding/_official_profiles.html.twig" with { grounding: grounding } only %}
+
+    {% include "@Contao/grounding/_standard_footer.html.twig" with { grounding: grounding, conformance: conformance } only %}
 </div>
