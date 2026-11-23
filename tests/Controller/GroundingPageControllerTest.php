@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Trassd\Contao\GroundingPages\Tests\Controller;
 
 use Contao\ContentModel;
+use Contao\CoreBundle\Routing\ContentUrlGenerator;
 use Contao\CoreBundle\Routing\ResponseContext\ResponseContextAccessor;
 use Contao\CoreBundle\Twig\FragmentTemplate;
 use Contao\GroundingPageModel;
@@ -14,6 +15,9 @@ use Symfony\Component\HttpFoundation\Response;
 use Trassd\Contao\GroundingPages\Composer\GroundingPageComposer;
 use Trassd\Contao\GroundingPages\Controller\ContentElement\GroundingPageController;
 use Trassd\Contao\GroundingPages\JsonLd\GroundingJsonLdBuilder;
+use Trassd\Contao\GroundingPages\Reference\ConformanceResolver;
+use Trassd\Contao\GroundingPages\Reference\EntityIdentityResolver;
+use Trassd\Contao\GroundingPages\Reference\SameAsPolicy;
 
 class GroundingPageControllerTest extends ContaoTestCase
 {
@@ -51,10 +55,34 @@ class GroundingPageControllerTest extends ContaoTestCase
         $this->assertSame('', $response->getContent());
     }
 
+    public function testPageUrlFallsBackToRequestWithoutQuery(): void
+    {
+        $controller = new GroundingPageController(
+            $this->createContaoFrameworkStub(),
+            new GroundingPageComposer(),
+            new GroundingJsonLdBuilder($this->createStub(ResponseContextAccessor::class)),
+            new EntityIdentityResolver(),
+            new ConformanceResolver(new SameAsPolicy()),
+            $this->createStub(ContentUrlGenerator::class),
+        );
+
+        $request = Request::create('https://example.com/cern?page_n=2');
+        $url = (new \ReflectionMethod($controller, 'pageUrl'))->invoke($controller, $request);
+
+        $this->assertSame('https://example.com/cern', $url);
+    }
+
     private function invokeGetResponse(object $adapter, ResponseContextAccessor $accessor, FragmentTemplate $template): Response
     {
         $framework = $this->createContaoFrameworkStub([GroundingPageModel::class => $adapter]);
-        $controller = new GroundingPageController($framework, new GroundingPageComposer(), new GroundingJsonLdBuilder($accessor));
+        $controller = new GroundingPageController(
+            $framework,
+            new GroundingPageComposer(),
+            new GroundingJsonLdBuilder($accessor),
+            new EntityIdentityResolver(),
+            new ConformanceResolver(new SameAsPolicy()),
+            $this->createStub(ContentUrlGenerator::class),
+        );
         $model = $this->createClassWithPropertiesStub(ContentModel::class, ['groundingPage' => 42]);
 
         return (new \ReflectionMethod($controller, 'getResponse'))->invoke($controller, $template, $model, new Request());
